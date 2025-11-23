@@ -1,0 +1,644 @@
+[
+  {
+    "riddim": "Shank I Sheck",
+    "label": "King Edwards",
+    "year": 1964,
+    "id": 1
+  },
+  {
+    "riddim": "Bam Bam",
+    "label": "BMN",
+    "year": 1966,
+    "id": 2
+  },
+  {
+    "riddim": "Answer",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 3
+  },
+  {
+    "riddim": "Ba Ba Boom",
+    "label": "Treasure Isle",
+    "year": 1967,
+    "id": 4
+  },
+  {
+    "riddim": "Bobby Babylon",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 5
+  },
+  {
+    "riddim": "Boops",
+    "label": "WIRL",
+    "year": 1967,
+    "id": 6
+  },
+  {
+    "riddim": "Darker Shade Of Black",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 7
+  },
+  {
+    "riddim": "Drum Song",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 8
+  },
+  {
+    "riddim": "General",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 9
+  },
+  {
+    "riddim": "Get A Lick",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 10
+  },
+  {
+    "riddim": "Heavy Rock",
+    "label": "Coxsone",
+    "year": 1967,
+    "id": 11
+  },
+  {
+    "riddim": "Hypocrites",
+    "label": "Wail 'N Soul 'M",
+    "year": 1967,
+    "id": 12
+  },
+  {
+    "riddim": "Lecturer",
+    "label": "Fugitive",
+    "year": 1967,
+    "id": 13
+  },
+  {
+    "riddim": "Love Is Not A Gamble",
+    "label": "Treasure Isle",
+    "year": 1967,
+    "id": 14
+  },
+  {
+    "riddim": "Love Won't Come Easy",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 15
+  },
+  {
+    "riddim": "Mr. Fix It",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 16
+  },
+  {
+    "riddim": "Pick Up The Pieces",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 17
+  },
+  {
+    "riddim": "Pressure And Slide",
+    "label": "FAB",
+    "year": 1967,
+    "id": 18
+  },
+  {
+    "riddim": "Queen Majesty",
+    "label": "Treasure Isle",
+    "year": 1967,
+    "id": 19
+  },
+  {
+    "riddim": "Rougher Yet",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 20
+  },
+  {
+    "riddim": "Solomon",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 21
+  },
+  {
+    "riddim": "Swing Easy",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 22
+  },
+  {
+    "riddim": "Tonight",
+    "label": "Move & Groove",
+    "year": 1967,
+    "id": 23
+  },
+  {
+    "riddim": "Vanity",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 24
+  },
+  {
+    "riddim": "Won't You Come Home",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 25
+  },
+  {
+    "riddim": "You Don't Care",
+    "label": "Studio One",
+    "year": 1967,
+    "id": 26
+  },
+  {
+    "riddim": "African Beat",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 27
+  },
+  {
+    "riddim": "Bye Bye Love",
+    "label": "Clancy's",
+    "year": 1968,
+    "id": 28
+  },
+  {
+    "riddim": "Cuss Cuss",
+    "label": "Duke",
+    "year": 1968,
+    "id": 29
+  },
+  {
+    "riddim": "Death In The Arena",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 30
+  },
+  {
+    "riddim": "Desperate Lover",
+    "label": "Coxsone",
+    "year": 1968,
+    "id": 31
+  },
+  {
+    "riddim": "Full Up",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 32
+  },
+  {
+    "riddim": "Get In The Groove",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 33
+  },
+  {
+    "riddim": "Heavenless",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 34
+  },
+  {
+    "riddim": "Heptones Gonna Fight",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 35
+  },
+  {
+    "riddim": "Hot Milk",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 36
+  },
+  {
+    "riddim": "Love Me Forever",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 37
+  },
+  {
+    "riddim": "Mad Mad",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 38
+  },
+  {
+    "riddim": "Mean Girl",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 39
+  },
+  {
+    "riddim": "My Conversation",
+    "label": "Lee's",
+    "year": 1968,
+    "id": 40
+  },
+  {
+    "riddim": "Nanny Goat",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 41
+  },
+  {
+    "riddim": "Party Time",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 42
+  },
+  {
+    "riddim": "Real Rock",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 43
+  },
+  {
+    "riddim": "Rockfort Rock",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 44
+  },
+  {
+    "riddim": "Satta Massagana",
+    "label": "Supreme",
+    "year": 1968,
+    "id": 45
+  },
+  {
+    "riddim": "Take Five",
+    "label": "Lee's",
+    "year": 1968,
+    "id": 46
+  },
+  {
+    "riddim": "Throw Me Corn",
+    "label": "Studio One",
+    "year": 1968,
+    "id": 47
+  },
+  {
+    "riddim": "Ali Baba",
+    "label": "Treasure Isle",
+    "year": 1969,
+    "id": 48
+  },
+  {
+    "riddim": "Breaking Up Is Hard To Do",
+    "label": "Studio One",
+    "year": 1969,
+    "id": 49
+  },
+  {
+    "riddim": "Drifter",
+    "label": "Moodisc",
+    "year": 1969,
+    "id": 50
+  },
+  {
+    "riddim": "M16",
+    "label": "Matador",
+    "year": 1969,
+    "id": 51
+  },
+  {
+    "riddim": "Modern Girl",
+    "label": "Unity",
+    "year": 1969,
+    "id": 52
+  },
+  {
+    "riddim": "Pretty Looks",
+    "label": "Studio One",
+    "year": 1969,
+    "id": 53
+  },
+  {
+    "riddim": "Queen Of The Minstrel",
+    "label": "Studio One",
+    "year": 1969,
+    "id": 54
+  },
+  {
+    "riddim": "Run Run",
+    "label": "Studio One",
+    "year": 1969,
+    "id": 55
+  },
+  {
+    "riddim": "A Love I Can Feel",
+    "label": "Studio One",
+    "year": 1970,
+    "id": 56
+  },
+  {
+    "riddim": "Freedom Blues",
+    "label": "Studio One",
+    "year": 1970,
+    "id": 57
+  },
+  {
+    "riddim": "I Can't Hide",
+    "label": "Treasure Isle",
+    "year": 1970,
+    "id": 58
+  },
+  {
+    "riddim": "Things And Time",
+    "label": "Studio One",
+    "year": 1970,
+    "id": 59
+  },
+  {
+    "riddim": "Cherry Oh Baby",
+    "label": "Jaguar",
+    "year": 1971,
+    "id": 60
+  },
+  {
+    "riddim": "Java",
+    "label": "Impact!",
+    "year": 1971,
+    "id": 61
+  },
+  {
+    "riddim": "Mr. Bassie",
+    "label": "Studio One",
+    "year": 1971,
+    "id": 62
+  },
+  {
+    "riddim": "Talk About Love",
+    "label": "Sunshot",
+    "year": 1971,
+    "id": 63
+  },
+  {
+    "riddim": "Black Cinderella",
+    "label": "Fe-Me Time",
+    "year": 1972,
+    "id": 64
+  },
+  {
+    "riddim": "College Rock",
+    "label": "Iron Side",
+    "year": 1972,
+    "id": 65
+  },
+  {
+    "riddim": "Fever",
+    "label": "Studio One",
+    "year": 1972,
+    "id": 66
+  },
+  {
+    "riddim": "He Prayed",
+    "label": "Iron Side",
+    "year": 1972,
+    "id": 67
+  },
+  {
+    "riddim": "Skylarking",
+    "label": "Studio One",
+    "year": 1972,
+    "id": 68
+  },
+  {
+    "riddim": "Far East",
+    "label": "Studio One",
+    "year": 1973,
+    "id": 69
+  },
+  {
+    "riddim": "Stalag",
+    "label": "Techniques",
+    "year": 1973,
+    "id": 70
+  },
+  {
+    "riddim": "Operation Radication",
+    "label": "Spider Man",
+    "year": 1975,
+    "id": 71
+  },
+  {
+    "riddim": "Sweets For My Sweet",
+    "label": "Dee Jay",
+    "year": 1975,
+    "id": 72
+  },
+  {
+    "riddim": "Taxi",
+    "label": "Tafari",
+    "year": 1975,
+    "id": 73
+  },
+  {
+    "riddim": "Ballistic Affair",
+    "label": "Well Charge",
+    "year": 1976,
+    "id": 74
+  },
+  {
+    "riddim": "Declaration Of Rights",
+    "label": "Studio One",
+    "year": 1976,
+    "id": 75
+  },
+  {
+    "riddim": "Heathen",
+    "label": "Island",
+    "year": 1977,
+    "id": 76
+  },
+  {
+    "riddim": "Storm",
+    "label": "Earthquake",
+    "year": 1977,
+    "id": 77
+  },
+  {
+    "riddim": "Youthman",
+    "label": "Grove",
+    "year": 1977,
+    "id": 78
+  },
+  {
+    "riddim": "Weather Balloon",
+    "label": "Gorgon",
+    "year": 1978,
+    "id": 79
+  },
+  {
+    "riddim": "No Warrior",
+    "label": "D.E.B. Music",
+    "year": 1979,
+    "id": 80
+  },
+  {
+    "riddim": "Baltimore",
+    "label": "Taxi",
+    "year": 1980,
+    "id": 81
+  },
+  {
+    "riddim": "Gunman",
+    "label": "Volcano",
+    "year": 1980,
+    "id": 82
+  },
+  {
+    "riddim": "Old Broom",
+    "label": "Taxi",
+    "year": 1980,
+    "id": 83
+  },
+  {
+    "riddim": "Rope In",
+    "label": "Justice",
+    "year": 1980,
+    "id": 84
+  },
+  {
+    "riddim": "Boxing",
+    "label": "Joe Gibbs",
+    "year": 1981,
+    "id": 85
+  },
+  {
+    "riddim": "Promised Land",
+    "label": "CBS",
+    "year": 1981,
+    "id": 86
+  },
+  {
+    "riddim": "Night Nurse",
+    "label": "Island",
+    "year": 1982,
+    "id": 87
+  },
+  {
+    "riddim": "Revolution",
+    "label": "Tad's",
+    "year": 1982,
+    "id": 88
+  },
+  {
+    "riddim": "World A Music",
+    "label": "Taxi",
+    "year": 1983,
+    "id": 89
+  },
+  {
+    "riddim": "Duck Dance",
+    "label": "Live & Love",
+    "year": 1985,
+    "id": 90
+  },
+  {
+    "riddim": "Sleng Teng",
+    "label": "Jammy's",
+    "year": 1985,
+    "id": 91
+  },
+  {
+    "riddim": "Tempo",
+    "label": "Firehouse",
+    "year": 1985,
+    "id": 92
+  },
+  {
+    "riddim": "Chase Vampire",
+    "label": "Jammy's",
+    "year": 1986,
+    "id": 93
+  },
+  {
+    "riddim": "Father Jungle Rock",
+    "label": "Techniques",
+    "year": 1986,
+    "id": 94
+  },
+  {
+    "riddim": "Punanny",
+    "label": "Jammy's",
+    "year": 1986,
+    "id": 95
+  },
+  {
+    "riddim": "Agony",
+    "label": "Jammy's",
+    "year": 1987,
+    "id": 96
+  },
+  {
+    "riddim": "Head To Toe",
+    "label": "Jammy's",
+    "year": 1987,
+    "id": 97
+  },
+  {
+    "riddim": "Kuff",
+    "label": "Jammy's",
+    "year": 1987,
+    "id": 98
+  },
+  {
+    "riddim": "Mud Up",
+    "label": "Skengdon",
+    "year": 1987,
+    "id": 99
+  },
+  {
+    "riddim": "Peanie Peanie",
+    "label": "Digital-B",
+    "year": 1987,
+    "id": 100
+  },
+  {
+    "riddim": "Sara",
+    "label": "Live & Love",
+    "year": 1987,
+    "id": 101
+  },
+  {
+    "riddim": "Hard Drugs",
+    "label": "Tappa",
+    "year": 1988,
+    "id": 102
+  },
+  {
+    "riddim": "Rumours",
+    "label": "Music Works",
+    "year": 1988,
+    "id": 103
+  },
+  {
+    "riddim": "Gun In A Baggy",
+    "label": "Shocking Vibes",
+    "year": 1989,
+    "id": 104
+  },
+  {
+    "riddim": "Poco Man Jam",
+    "label": "Steely & Clevie",
+    "year": 1989,
+    "id": 105
+  },
+  {
+    "riddim": "Sick",
+    "label": "FM Force",
+    "year": 1989,
+    "id": 106
+  },
+  {
+    "riddim": "Soap",
+    "label": "Dennis Star",
+    "year": 1989,
+    "id": 107
+  }
+]
