@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja" class="detailLock">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RIDDIM INDEX – Detail</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="detailPage">
+
+  <header class="masthead container detailPage">
+    <h1 class="title">
+  <a href="index.html" class="titleLink">RIDDIM INDEX</a>
+  <span class="ver">v1.0</span>
+</h1>
+
+    <div class="titleline"></div>
+  </header>
+
+  <!-- リディムカード -->
+  <section class="card container">
+    <div class="cardHead">
+      <div class="cardHead__row">
+        <h2 id="riddimTitle" class="cardHead__title"></h2>
+        <button
+          id="ytRiddimBtn"
+          class="ytBtn"
+          type="button"
+          aria-label="YouTubeでこのリディムを検索"
+        >
+          <span class="ytIcon" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="metaGrid">
+      <div class="metaRow">
+        <div class="metaKey">別名：</div>
+        <div class="metaVal" id="aka">—</div>
+      </div>
+      <div class="metaRow">
+        <div class="metaKey">レーベル：</div>
+        <div class="metaVal" id="label">—</div>
+      </div>
+      <div class="metaRow">
+        <div class="metaKey">リリース年：</div>
+        <div class="metaVal" id="year">—</div>
+      </div>
+      <div class="metaRow">
+        <div class="metaKey">プロデューサー：</div>
+        <div class="metaVal" id="producer">—</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PICKUPカード -->
+  <section class="card container">
+    <div class="cardHead">
+      <h2 class="cardHead__title">PICKUP</h2>
+    </div>
+    <ul id="pickup" class="songList"></ul>
+  </section>
+
+  <!-- 必要なら v=2 など付けてキャッシュ回避 -->
+  <script src="detail.js"></script>
+
+<footer class="footerNote">
+  ChatGPTによって作成しているため、情報は必ずしも正しいとは限りません。<br>
+  重要な情報は確認するようにしてください。
+</footer>
+
+</body>
+</html>
