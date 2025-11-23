@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="version" content="v1.0" />
+  <title>RIDDIM INDEX</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="indexPage">
+  <header class="masthead container">
+    <h1 class="title">
+  <a href="index.html" class="titleLink">RIDDIM INDEX</a>
+  <span class="ver">v1.0</span>
+</h1>
+
+
+    <div class="titleline"></div>
+    <input id="q" class="input" type="search" autocomplete="off"
+      placeholder="Search（ Riddim ／ レーベル ／ リリース年 ）" aria-label="全体検索" />
+  </header>
+
+  <section class="filters container" id="filters">
+    <select id="labelSelect" aria-label="レーベルプルダウン">
+      <option value="All">レーベル（ALL）</option>
+    </select>
+    <select id="yearSelect" aria-label="年代プルダウン">
+      <option value="All">年代（ALL）</option>
+    </select>
+  </section>
+
+  <div class="container">
+    <div id="meta" class="meta"></div>
+  </div>
+
+  <section class="card container">
+    <!-- ★ ソートボタンは削除。ヘッダー自体がソートトリガー -->
+    <div class="columns sticky-head" role="row">
+      <div id="hName"  class="col name"  role="columnheader" aria-sort="ascending">Riddim</div>
+      <div id="hLabel" class="col label" role="columnheader" aria-sort="none">レーベル</div>
+      <div id="hYear"  class="col year"  role="columnheader" aria-sort="none">リリース年</div>
+    </div>
+    <div id="list" class="list" role="rowgroup"></div>
+  </section>
+
+  <script src="main.js"></script>
+
+<footer class="footerNote">
+  ChatGPTによって作成しているため、情報は必ずしも正しいとは限りません。<br>
+  重要な情報は確認するようにしてください。
+</footer>
+
+</body>
+</html>
