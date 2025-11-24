@@ -9,22 +9,17 @@
 
   /* ------------------------------------------------------------
    *  ファイル名キー正規化
-   *  - 末尾の "riddim" 削除
-   *  - () 削除
-   *  - "." → "_"
-   *  - 空白 → "_"
-   *  - 英数と "_" 以外除去
    * ------------------------------------------------------------ */
   function normalizeFilenameKey(raw) {
     if (!raw) return "";
 
     let s = raw.trim();
-    s = s.replace(/\s+riddim\s*$/i, "");   // 末尾 "riddim"
-    s = s.replace(/\([^)]*\)/g, "");       // 括弧と中身
-    s = s.replace(/\./g, "_");             // "." → "_"
-    s = s.replace(/\s+/g, "_");            // 空白 → "_"
-    s = s.toLowerCase();                   // 小文字化
-    s = s.replace(/[^a-z0-9_]/g, "");      // 英数と "_" 以外除去
+    s = s.replace(/\s+riddim\s*$/i, "");
+    s = s.replace(/\([^)]*\)/g, "");
+    s = s.replace(/\./g, "_");
+    s = s.replace(/\s+/g, "_");
+    s = s.toLowerCase();
+    s = s.replace(/[^a-z0-9_]/g, "");
 
     return s;
   }
@@ -48,22 +43,54 @@
   /* ------------------------------------------------------------
    *  文言クリーンアップ
    * ------------------------------------------------------------ */
-  const cleanTitle  = (s) =>
-    s ? s.replace(/\([^)]*\)/g, "").replace(/\s+/g, " ").trim() : s;
+  const cleanTitle   = (s) => s ? s.replace(/\([^)]*\)/g, "").replace(/\s+/g, " ").trim() : s;
+  const cleanArtist  = cleanTitle;
+  const cleanLabel   = (s) => s ? s.replace(/\(\d+\)/g, "").trim() : s;
 
-  const cleanArtist = cleanTitle;
+  /* ------------------------------------------------------------
+   *  スマホ用タッチホバー（詳細ページ）
+   * ------------------------------------------------------------ */
+  function setupTouchHoverForSongs() {
+    const rows = document.querySelectorAll(".songRow");
+    if (!rows.length) return;
 
-  const cleanLabel  = (s) =>
-    s ? s.replace(/\(\d+\)/g, "").trim() : s;
+    let activeRow = null;
+
+    rows.forEach((row) => {
+      row.addEventListener(
+        "touchstart",
+        (e) => {
+          if (e.touches && e.touches.length > 1) return;
+
+          if (activeRow && activeRow !== row) {
+            activeRow.classList.remove("touch-hover");
+          }
+
+          row.classList.add("touch-hover");
+          activeRow = row;
+        },
+        { passive: true }
+      );
+    });
+
+    document.addEventListener(
+      "touchstart",
+      (e) => {
+        const t = e.target.closest && e.target.closest(".songRow");
+        if (!t && activeRow) {
+          activeRow.classList.remove("touch-hover");
+          activeRow = null;
+        }
+      },
+      { passive: true }
+    );
+  }
 
   /* ------------------------------------------------------------
    *  メイン処理
    * ------------------------------------------------------------ */
   async function load() {
     try {
-      /* ------------------------------
-       *  riddim パラメータ読取
-       * ------------------------------ */
       const rawRiddim = getParam("riddim");
       if (!rawRiddim) {
         console.error("riddim パラメータがありません");
@@ -76,9 +103,6 @@
         return;
       }
 
-      /* ------------------------------
-       *  JSON 読み込み（キャッシュ有効）
-       * ------------------------------ */
       const candidates = [
         `data/${key}.json`,
         `data/${key}_full.json`,
@@ -89,14 +113,11 @@
 
       for (const url of candidates) {
         try {
-          // ★ no-store を外してブラウザ標準キャッシュに任せる
-          const res = await fetch(url);
+          const res = await fetch(url, { cache: "no-store" });
           if (!res.ok) continue;
           rec = await res.json();
           break;
-        } catch (e) {
-          console.warn("JSON フェッチ中エラー:", url, e);
-        }
+        } catch {}
       }
 
       if (!rec) {
@@ -104,9 +125,6 @@
         return;
       }
 
-      /* ------------------------------
-       *  表示用メタ情報
-       * ------------------------------ */
       const tracks     = Array.isArray(rec.tracks) ? rec.tracks : [];
       const firstTrack = tracks[0] || null;
       const akaArr     = Array.isArray(rec.aka) ? rec.aka : [];
@@ -148,10 +166,7 @@
       setText("producer", producer || "—");
 
       /* ---- AKA ---- */
-      setText(
-        "aka",
-        akaArr.length ? akaArr.filter(Boolean).join(" ／ ") : "—"
-      );
+      setText("aka", akaArr.length ? akaArr.filter(Boolean).join(" ／ ") : "—");
 
       /* ------------------------------------------------------------
        *  PICKUP 展開
@@ -162,7 +177,6 @@
 
       let picks = [];
 
-      // row_index式（新方式）
       if (Array.isArray(rec.pickup) && rec.pickup.length) {
         const pickupArr = rec.pickup;
 
@@ -182,26 +196,19 @@
             });
           });
         } else {
-          // 旧形式
           picks = pickupArr.slice();
         }
       }
 
-      // original の保険挿入
       if (rec.original?.artist && rec.original?.title) {
         const orig = rec.original;
         const origKey = `${orig.artist}___${orig.title}`.toLowerCase();
 
-        if (
-          !picks.some(p =>
-            (`${p.artist}___${p.title}` || "").toLowerCase() === origKey
-          )
-        ) {
+        if (!picks.some(p => `${p.artist}___${p.title}`.toLowerCase() === origKey)) {
           picks.push(orig);
         }
       }
 
-      // ソート（year 昇順）
       picks.sort((a, b) => {
         const ay = Number(a.year);
         const by = Number(b.year);
@@ -214,42 +221,67 @@
         return 0;
       });
 
-      // 描画
       picks.forEach(p => {
         let artist = cleanArtist(p.artist || "—");
         let title  = cleanTitle(p.title || "—");
-        let year   = p.year ? ` (${String(p.year).trim()})` : "";
+        let year   = p.year ? String(p.year).trim() : "";
 
         const li = document.createElement("li");
         li.className = "songRow";
+
         li.style.overflowX = "auto";
         li.style.webkitOverflowScrolling = "touch";
 
-        const query = `${artist} ${title}`.trim();
-        const yurl  =
-          "https://www.youtube.com/results?search_query=" +
-          encodeURIComponent(query);
+        const hasValid =
+          (artist && artist !== "—") || (title && title !== "—");
 
-        const a = document.createElement("a");
-        a.className = "songLink";
-        a.href = yurl;
-        a.target = "_blank";
-        a.rel = "noopener";
-        a.style.whiteSpace = "nowrap";
-        a.style.display = "inline-block";
+        const yearHTML = year
+          ? `<span class="year" aria-hidden="true"
+                style="
+                  user-select: none;
+                  -webkit-user-select: none;
+                  -moz-user-select: none;
+                  -ms-user-select: none;
+                "> (${year})</span>`
+          : "";
 
-        a.innerHTML =
-          `<span class="dot" aria-hidden="true">・</span>` +
-          `<span class="artist">${artist}</span>` +
-          `<span class="sep" aria-hidden="true"> - </span>` +
-          `<span class="title">${title}</span>` +
-          (year
-            ? `<span class="year" aria-hidden="true">${year}</span>`
-            : "");
+        if (hasValid) {
+          const queryStr = `${artist} ${title}`.trim();
+          const href =
+            "https://www.youtube.com/results?search_query=" +
+            encodeURIComponent(queryStr);
 
-        li.appendChild(a);
+          const a = document.createElement("a");
+          a.className = "songLink";
+          a.href = href;
+          a.target = "_blank";
+          a.rel = "noopener";
+
+          a.style.whiteSpace = "nowrap";
+          a.style.display = "inline-block";
+
+          a.innerHTML =
+            `<span class="dot" aria-hidden="true">・</span>` +
+            `<span class="artist">${artist}</span>` +
+            `<span class="sep" aria-hidden="true"> - </span>` +
+            `<span class="title">${title}</span>` +
+            yearHTML;
+
+          li.appendChild(a);
+        } else {
+          li.innerHTML =
+            `<span class="dot" aria-hidden="true">・</span>` +
+            `<span class="artist">${artist}</span>` +
+            `<span class="sep" aria-hidden="true"> - </span>` +
+            `<span class="title">${title}</span>` +
+            yearHTML;
+        }
+
         ul.appendChild(li);
       });
+
+      /* ★★★ ここでタッチホバーをセット ★★★ */
+      setupTouchHoverForSongs();
 
       /* ------------------------------------------------------------
        *  タイトル右 YouTube ボタン
@@ -270,20 +302,17 @@
       }
 
       /* ------------------------------------------------------------
-       *  ピックアップ部分の高さ調整
+       *  PICKUP 高さ調整
        * ------------------------------------------------------------ */
       function adjustPickupHeight() {
         try {
-          const vh =
-            window.innerHeight || document.documentElement.clientHeight;
+          const vh = window.innerHeight || document.documentElement.clientHeight;
 
           if (!document.body.classList.contains("detailPage")) return;
 
           const masthead   = document.querySelector(".masthead");
           const footer     = document.querySelector(".footerNote");
-          const cards      =
-            document.querySelectorAll(".detailPage .card.container");
-
+          const cards      = document.querySelectorAll(".detailPage .card.container");
           if (!masthead || !footer || cards.length < 2) return;
 
           const riddimCard = cards[0];

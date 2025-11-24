@@ -1,21 +1,48 @@
 (function () {
+  // ====== Global touch hover handler (mobile) ======
+  // 現在タッチ中の「リディムキー」を保存しておく
+  let currentTouchedKey = null;
+
+  document.addEventListener(
+    "touchstart",
+    (ev) => {
+      const row = ev.target.closest(".row.row--click");
+
+      if (!row) {
+        // 行以外をタッチしたら、既存 hover をクリア
+        currentTouchedKey = null;
+        const prev = document.querySelector(".row.row--click.touch-hover");
+        if (prev) prev.classList.remove("touch-hover");
+        return;
+      }
+
+      const key = row.dataset.riddimKey || "";
+
+      // 別の行に切り替えた場合、前の hover を外す
+      if (currentTouchedKey && currentTouchedKey !== key) {
+        const prev = document.querySelector(".row.row--click.touch-hover");
+        if (prev) prev.classList.remove("touch-hover");
+      }
+
+      // 新しい行に hover を付ける
+      row.classList.add("touch-hover");
+      currentTouchedKey = key;
+    },
+    { passive: true }
+  );
+
   document.addEventListener("DOMContentLoaded", init);
 
   function init() {
-    // =========================
-    //  バージョン表示
-    // =========================
+    // ====== version from meta -> header ======
     const metaVer = document.querySelector('meta[name="version"]');
-    const ver     = metaVer ? metaVer.content : "";
-    const verEl   = document.getElementById("ver");
+    const ver = metaVer ? metaVer.content : "";
+    const verEl = document.getElementById("ver");
     if (verEl && ver) verEl.textContent = ver;
 
-    // =========================
-    //  要素取得
-    // =========================
-    const listEl      = document.getElementById("list");
-    const metaEl      = document.getElementById("meta");
-    const qInput      = document.getElementById("q");
+    const listEl  = document.getElementById("list");
+    const metaEl  = document.getElementById("meta");
+    const qInput  = document.getElementById("q");
     const labelSelect = document.getElementById("labelSelect");
     const yearSelect  = document.getElementById("yearSelect");
 
@@ -25,25 +52,20 @@
 
     if (!listEl) return;
 
-    // =========================
-    //  データ本体
-    // =========================
-    let items   = [];         // index.json から読み込む
-    let visible = items.slice();
+    // データ本体（index.json から読み込み）
+    let items = [];
 
-    // =========================
-    //  リスト高さフィット
-    // =========================
+    // ====== 高さフィット ======
     function fitListHeight() {
       if (!listEl) return;
 
       const rect = listEl.getBoundingClientRect();
-      const vh   = window.innerHeight || document.documentElement.clientHeight;
+      const vh = window.innerHeight || document.documentElement.clientHeight;
 
-      const footer  = document.querySelector(".footerNote");
+      const footer = document.querySelector(".footerNote");
       const footerH = footer ? footer.offsetHeight : 0;
 
-      const extraGap  = 32;
+      const extraGap = 32;
       const bottomGap = footerH + extraGap;
 
       const target = Math.max(120, Math.floor(vh - rect.top - bottomGap));
@@ -55,19 +77,15 @@
     window.addEventListener("orientationchange", fitListHeight, { passive: true });
     setTimeout(fitListHeight, 0);
 
-    // =========================
-    //  状態
-    // =========================
-    let q           = "";
-    let qRe         = null;
-    let filterLabel = "All";
+    // ====== 状態 ======
+    let q = "";
+    let qRe = null;
+    let filterLabel  = "All";
     let filterDecade = "All";
-    let sortKey     = "riddim";
-    let sortDir     = "asc";
+    let sortKey = "riddim";
+    let sortDir = "asc";
+    let visible = items.slice();
 
-    // =========================
-    //  検索・ソート用ヘルパー
-    // =========================
     function makeQueryRe(s) {
       if (!s) return null;
       const esc = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -100,9 +118,7 @@
       return String(a).localeCompare(String(b), undefined, { sensitivity: "base" });
     }
 
-    // =========================
-    //  セレクトボックス構築
-    // =========================
+    // ====== プルダウンの中身作成 ======
     function buildOptions() {
       const uniq = (arr) =>
         Array.from(new Set(arr)).sort((a, b) =>
@@ -110,7 +126,7 @@
         );
 
       const labelOps = ["All", ...uniq(items.map((it) => it.label))];
-      const decOps   = [
+      const decOps = [
         "All",
         ...Array.from(new Set(items.map((it) => toDecade(it.year))))
           .sort((a, b) => a - b)
@@ -127,12 +143,9 @@
         ...decOps.slice(1).map((v) => `<option value="${v}">${v}s</option>`),
       ].join("");
     }
-
     buildOptions();
 
-    // =========================
-    //  バーチャルリストの土台
-    // =========================
+    // ====== バーチャルリストの土台 ======
     const outer = document.createElement("div");
     outer.style.position = "relative";
     listEl.appendChild(outer);
@@ -144,7 +157,6 @@
     outer.appendChild(inner);
 
     let ROW_H = 40;
-
     function measureRowH() {
       const probe = document.createElement("div");
       probe.className = "row";
@@ -152,20 +164,14 @@
         '<div class="name">Probe</div><div class="label">Probe</div><div class="year">2000</div>';
       probe.style.visibility = "hidden";
       outer.appendChild(probe);
-
-      const h = probe.getBoundingClientRect().height;
-      ROW_H   = Math.max(28, Math.round(h)) || ROW_H;
-
+      ROW_H = Math.max(28, Math.round(probe.getBoundingClientRect().height)) || ROW_H;
       outer.removeChild(probe);
     }
-
     measureRowH();
 
     listEl.addEventListener("scroll", () => render(), { passive: true });
 
-    // =========================
-    //  フィルタ＋ソート
-    // =========================
+    // ====== ソート＋フィルタ ======
     function applyFiltersAndSort() {
       visible = items.filter(
         (it) =>
@@ -192,7 +198,7 @@
         return key;
       }
       function jpDir(dir) {
-        if (dir === "asc")  return "昇順";
+        if (dir === "asc") return "昇順";
         if (dir === "desc") return "降順";
         return dir;
       }
@@ -215,10 +221,7 @@
       if (sortKey === "riddim") {
         hName.classList.add("sorted");
         hName.textContent += arrow(sortDir);
-        hName.setAttribute(
-          "aria-sort",
-          sortDir === "asc" ? "ascending" : "descending"
-        );
+        hName.setAttribute("aria-sort", sortDir === "asc" ? "ascending" : "descending");
       } else if (sortKey === "label") {
         hLabel.classList.add("sorted");
         hLabel.textContent += arrow(sortDir);
@@ -242,9 +245,7 @@
       }
     }
 
-    // =========================
-    //  イベント
-    // =========================
+    // ====== イベント ======
     qInput.addEventListener(
       "input",
       (() => {
@@ -252,7 +253,7 @@
         return () => {
           clearTimeout(t);
           t = setTimeout(() => {
-            q   = qInput.value.trim();
+            q = qInput.value.trim();
             qRe = makeQueryRe(q);
             applyFiltersAndSort();
           }, 60);
@@ -284,27 +285,34 @@
     hLabel.addEventListener("click", () => toggleSortByHeader("label"));
     hYear.addEventListener("click", () => toggleSortByHeader("year"));
 
-    // =========================
-    //  レンダリング
-    // =========================
+    // ====== 描画 ======
     function render() {
       const viewportH = listEl.clientHeight || 300;
-      const total     = visible.length * ROW_H;
-      const start     = Math.max(0, Math.floor(listEl.scrollTop / ROW_H) - 10);
-      const end       = Math.min(
+      const total = visible.length * ROW_H;
+      const start = Math.max(0, Math.floor(listEl.scrollTop / ROW_H) - 10);
+      const end = Math.min(
         visible.length,
         Math.ceil((listEl.scrollTop + viewportH) / ROW_H) + 10
       );
 
-      outer.style.height      = total + "px";
-      inner.style.transform   = `translateY(${start * ROW_H}px)`;
-      inner.innerHTML         = "";
+      outer.style.height = total + "px";
+      inner.style.transform = `translateY(${start * ROW_H}px)`;
 
+      inner.innerHTML = "";
       for (let i = start; i < end; i++) {
-        const it  = visible[i];
+        const it = visible[i];
         const row = document.createElement("div");
-
         row.className = "row row--click";
+
+        // この行のリディムキー（detail.html に渡しているのと同じ）
+        const riddimKey = it.riddim || it.name || "";
+        row.dataset.riddimKey = riddimKey;
+
+        // スクロールで再描画された時に、タッチ済みなら hover を復元
+        if (currentTouchedKey && currentTouchedKey === riddimKey) {
+          row.classList.add("touch-hover");
+        }
+
         row.innerHTML =
           `<div class="name">${hi(it.riddim)}</div>` +
           `<div class="label">${hi(it.label)}</div>` +
@@ -314,11 +322,8 @@
         row.setAttribute("tabindex", "0");
 
         const goDetail = () => {
-          // 一覧に出しているリディム名（または name）をそのまま使う
           const key = it.riddim || it.name || "";
           if (!key) return;
-
-          // detail.html へは riddim パラメータで渡す（. や ' も encode）
           location.href = "detail.html?riddim=" + encodeURIComponent(key);
         };
 
@@ -334,9 +339,7 @@
       }
     }
 
-    // =========================
-    //  データ読み込み & 初期描画
-    // =========================
+    // ====== データ読み込み & 初期描画 ======
     fetch("index.json")
       .then((res) => {
         if (!res.ok) throw new Error("index.json 読み込みエラー");
@@ -345,10 +348,10 @@
       .then((data) => {
         // index.json は [ { id, riddim(or name), label, year }, ... ] の配列を想定
         items = data.map((it, idx) => ({
-          id:     it.id     ?? (idx + 1),
+          id: it.id ?? (idx + 1),
           riddim: it.riddim ?? it.name ?? "",
-          label:  it.label  ?? "",
-          year:   it.year   ?? "",
+          label: it.label ?? "",
+          year: it.year ?? "",
         }));
 
         buildOptions();

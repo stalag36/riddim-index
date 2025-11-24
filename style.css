@@ -1,4 +1,5 @@
-/* v1.1.0 — RIDDIM INDEX Twitch Dark Theme (colors only swap, layout unchanged) */
+/* v1.0.2 — RIDDIM INDEX Twitch-dark theme + touch-hover + split hover (PC/mobile) */
+
 :root{
   /* spacing tokens */
   --sp-2: 2px;
@@ -9,15 +10,15 @@
   --sp-12: 12px;
   --ctl-h: 36px;
 
-  /* colors — Twitch ダークテーマ準拠 */
-  --navy-bg:   #0e0e10; /* page background */
-  --navy-card: #18181b; /* card background */
-  --navy-line: #2a2a2d; /* solid line */
-  --navy-dash: #2a2a2d; /* dashed line */
-  --mint:      #9146ff; /* accent (Twitch Purple) */
-  --text:      #efeff1; /* main text */
-  --text-soft: #adadb8; /* secondary text */
-  --chip-bg:   #1f1f23; /* input/select background */
+  /* Twitch-like colors */
+  --navy-bg:   #0e0e10;  /* page background */
+  --navy-card: #18181b;  /* card background */
+  --navy-line: #26262c;  /* solid border */
+  --navy-dash: #26262c;  /* dashed border */
+  --mint:      #9146ff;  /* primary accent (Twitch purple) */
+  --text:      #f7f7f8;  /* main text */
+  --text-soft: #c8c8d0;  /* softer text */
+  --chip-bg:   #1f1f23;  /* input / chip bg */
 
   /* base font size (mobile / tablet) */
   --fs: 14px;
@@ -48,14 +49,9 @@ body{
        "Helvetica Neue", Arial, sans-serif;
   font-variant-numeric: tabular-nums;
   -webkit-text-size-adjust:100%;
-}
-
-/* ==== Font smoothing ==== */
-body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 
 /* ========== Layout base ========== */
 
@@ -75,7 +71,7 @@ body {
 
 .title{
   margin:0;
-  font-size:28px;   /* タイトル大きめ */
+  font-size:26px; /* 少し大きめ */
   font-weight:800;
   letter-spacing:.2px;
 }
@@ -101,7 +97,6 @@ body {
   color:inherit;
   text-decoration:none;
   cursor:pointer;
-  /* Anton はキャンセル → 本文と同じシステムフォントを使う */
 }
 
 .titleLink:visited{
@@ -125,7 +120,7 @@ body {
   padding:0 12px;
   color:var(--text-soft);
   outline:none;
-  font-size:var(--fs); /* 検索窓の文字サイズをプルダウンと揃える */
+  font-size:var(--fs);
 }
 
 .input::placeholder{
@@ -165,7 +160,7 @@ body {
 
 .meta{
   margin-top:var(--sp-8);
-  margin-bottom:0;   /* 下の余白だけタイトに */
+  margin-bottom:0;
   color:var(--text-soft);
 }
 
@@ -218,7 +213,7 @@ body {
 .sortBtn.active{
   border-color:var(--mint);
   color:var(--mint);
-  background:#232329;
+  background:#211f35;
 }
 
 .sortBtn .dir{
@@ -305,7 +300,7 @@ body {
   white-space:nowrap;
 }
 
-/* hoverable rows in index */
+/* hoverable rows in index: ベースのホバー用レイヤー */
 .row.row--click{
   position:relative;
   cursor:pointer;
@@ -315,13 +310,21 @@ body {
   content:"";
   position:absolute;
   inset:0;
-  background:rgba(255,255,255,0.05);
+  background:rgba(255,255,255,0.05); /* 0.05 に統一 */
   opacity:0;
   pointer-events:none;
   transition:opacity .12s ease;
 }
 
-.row.row--click:hover::before{
+/* PC だけ :hover で発火させる */
+@media (hover:hover){
+  .row.row--click:hover::before{
+    opacity:1;
+  }
+}
+
+/* スマホ／タッチは JS から touch-hover クラスで発火 */
+.row.row--click.touch-hover::before{
   opacity:1;
 }
 
@@ -466,12 +469,12 @@ body {
 
 .metaKey{
   color:var(--text-soft);
-  font-weight:400; /* 「別名：」などを細めに */
+  font-weight:400;
 }
 
 .metaVal{
   color:var(--text-soft);
-  margin-left:-35px; /* 値だけ少し左へ寄せて揃える */
+  margin-left:-35px;
 }
 
 /* ========== Detail: PICKUP song list ========== */
@@ -523,16 +526,23 @@ body {
   pointer-events:none;
 }
 
-/* Song-row hover same as index */
-.songRow:hover{
-  background:rgba(255,255,255,0.03);
+/* Detail song hover（PC の :hover） */
+@media (hover:hover){
+  .songRow:hover{
+    background:rgba(255,255,255,0.05); /* ここも 0.05 に統一 */
+  }
+}
+
+/* Detail song touch-hover（スマホ用） */
+.songRow.touch-hover{
+  background:rgba(255,255,255,0.05);
 }
 
 /* Songs align using UL padding; LI has no extra left padding */
 .card .songList{
   list-style:none;
   margin:0;
-  padding-left:var(--align-left); /* 16px from card inner */
+  padding-left:var(--align-left);
   padding-right:10px;
 }
 
@@ -541,7 +551,7 @@ body {
   padding-left:0;
 }
 
-/* PICKUP の YouTube リンク（見た目はテキストのまま） */
+/* PICKUP の YouTube リンク */
 .songLink{
   display:flex;
   align-items:center;
@@ -589,14 +599,14 @@ body {
   text-align:center;
   color:var(--text-soft);
   opacity:.6;
-  font-size:10px;  /* PC・タブレット */
+  font-size:10px;
   padding:15px 0 20px;
   line-height:1.4;
 }
 
 @media (max-width:600px){
   .footerNote{
-    font-size:8px; /* スマホ */
+    font-size:8px;
   }
 }
 
@@ -606,7 +616,7 @@ body.detailPage{
   display:flex;
   flex-direction:column;
   height:100%;
-  overflow:hidden; /* ブラウザのスクロールバーを出さない */
+  overflow:hidden;
 }
 
 /* ヘッダーの詰めだけ従来どおり */
@@ -622,7 +632,7 @@ body.detailPage{
 /* 1枚目（リディムカード） */
 body.detailPage .card.container:first-of-type{
   flex:0 0 auto;
-  margin-top:8px;   /* 調整済み */
+  margin-top:8px;
   margin-bottom:9px;
 }
 
@@ -645,7 +655,7 @@ body.detailPage .card.container:nth-of-type(2) .cardHead{
 body.detailPage .card.container:nth-of-type(2) .songList{
   flex:1 1 auto;
   min-height:0;
-  max-height:var(--pickup-max-height, 320px); /* fallback 320px */
+  max-height:var(--pickup-max-height, 320px);
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
@@ -661,7 +671,7 @@ body.indexPage{
   display:flex;
   flex-direction:column;
   height:100%;
-  overflow:hidden; /* ブラウザのスクロールバーを出さない */
+  overflow:hidden;
 }
 
 /* インデックスのカード（一覧カード）を残り高さぜんぶ使う */
@@ -674,7 +684,7 @@ body.indexPage .card.container{
   margin-bottom:0;
 }
 
-/* ヘッダー行（Riddim / レーベル / 年）は固定 */
+/* ヘッダー行 */
 body.indexPage .card.container .columns{
   flex:0 0 auto;
 }
@@ -701,7 +711,7 @@ body.indexPage .card .list{
 
 body.indexPage .card .row:last-child{
   margin-bottom:0 !important;
-  padding-bottom:8px; /* 他行と同じに揃える */
+  padding-bottom:8px;
 }
 
 @media (max-width:900px){
@@ -718,6 +728,6 @@ body.indexPage .card .row:last-child{
     --fs:16px;
   }
   .metaVal {
-    margin-left: -20px; /* 標準 -35px から少し右へ寄せる */
+    margin-left: -20px;
   }
 }
