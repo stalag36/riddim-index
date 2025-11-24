@@ -19,12 +19,12 @@
     if (!raw) return "";
 
     let s = raw.trim();
-    s = s.replace(/\s+riddim\s*$/i, "");
-    s = s.replace(/\([^)]*\)/g, "");
-    s = s.replace(/\./g, "_");
-    s = s.replace(/\s+/g, "_");
-    s = s.toLowerCase();
-    s = s.replace(/[^a-z0-9_]/g, "");
+    s = s.replace(/\s+riddim\s*$/i, "");   // 末尾 "riddim"
+    s = s.replace(/\([^)]*\)/g, "");       // 括弧と中身
+    s = s.replace(/\./g, "_");             // "." → "_"
+    s = s.replace(/\s+/g, "_");            // 空白 → "_"
+    s = s.toLowerCase();                   // 小文字化
+    s = s.replace(/[^a-z0-9_]/g, "");      // 英数と "_" 以外除去
 
     return s;
   }
@@ -48,9 +48,13 @@
   /* ------------------------------------------------------------
    *  文言クリーンアップ
    * ------------------------------------------------------------ */
-  const cleanTitle   = (s) => s ? s.replace(/\([^)]*\)/g, "").replace(/\s+/g, " ").trim() : s;
-  const cleanArtist  = cleanTitle;
-  const cleanLabel   = (s) => s ? s.replace(/\(\d+\)/g, "").trim() : s;
+  const cleanTitle  = (s) =>
+    s ? s.replace(/\([^)]*\)/g, "").replace(/\s+/g, " ").trim() : s;
+
+  const cleanArtist = cleanTitle;
+
+  const cleanLabel  = (s) =>
+    s ? s.replace(/\(\d+\)/g, "").trim() : s;
 
   /* ------------------------------------------------------------
    *  メイン処理
@@ -73,7 +77,7 @@
       }
 
       /* ------------------------------
-       *  JSON 読み込み
+       *  JSON 読み込み（キャッシュ有効）
        * ------------------------------ */
       const candidates = [
         `data/${key}.json`,
@@ -85,11 +89,14 @@
 
       for (const url of candidates) {
         try {
-          const res = await fetch(url, { cache: "no-store" });
+          // ★ no-store を外してブラウザ標準キャッシュに任せる
+          const res = await fetch(url);
           if (!res.ok) continue;
           rec = await res.json();
           break;
-        } catch { }
+        } catch (e) {
+          console.warn("JSON フェッチ中エラー:", url, e);
+        }
       }
 
       if (!rec) {
@@ -141,7 +148,10 @@
       setText("producer", producer || "—");
 
       /* ---- AKA ---- */
-      setText("aka", akaArr.length ? akaArr.filter(Boolean).join(" ／ ") : "—");
+      setText(
+        "aka",
+        akaArr.length ? akaArr.filter(Boolean).join(" ／ ") : "—"
+      );
 
       /* ------------------------------------------------------------
        *  PICKUP 展開
@@ -160,6 +170,7 @@
           const map = new Map(tracks.map(t => [t.row_index, t]));
 
           pickupArr.forEach(p => {
+            if (!p || typeof p.row_index !== "number") return;
             const base = map.get(p.row_index);
             if (!base) return;
 
@@ -181,7 +192,11 @@
         const orig = rec.original;
         const origKey = `${orig.artist}___${orig.title}`.toLowerCase();
 
-        if (!picks.some(p => `${p.artist}___${p.title}`.toLowerCase() === origKey)) {
+        if (
+          !picks.some(p =>
+            (`${p.artist}___${p.title}` || "").toLowerCase() === origKey
+          )
+        ) {
           picks.push(orig);
         }
       }
@@ -211,8 +226,9 @@
         li.style.webkitOverflowScrolling = "touch";
 
         const query = `${artist} ${title}`.trim();
-        const yurl  = "https://www.youtube.com/results?search_query=" +
-                      encodeURIComponent(query);
+        const yurl  =
+          "https://www.youtube.com/results?search_query=" +
+          encodeURIComponent(query);
 
         const a = document.createElement("a");
         a.className = "songLink";
@@ -227,7 +243,9 @@
           `<span class="artist">${artist}</span>` +
           `<span class="sep" aria-hidden="true"> - </span>` +
           `<span class="title">${title}</span>` +
-          (year ? `<span class="year" aria-hidden="true">${year}</span>` : "");
+          (year
+            ? `<span class="year" aria-hidden="true">${year}</span>`
+            : "");
 
         li.appendChild(a);
         ul.appendChild(li);
@@ -256,13 +274,16 @@
        * ------------------------------------------------------------ */
       function adjustPickupHeight() {
         try {
-          const vh = window.innerHeight || document.documentElement.clientHeight;
+          const vh =
+            window.innerHeight || document.documentElement.clientHeight;
 
           if (!document.body.classList.contains("detailPage")) return;
 
           const masthead   = document.querySelector(".masthead");
           const footer     = document.querySelector(".footerNote");
-          const cards      = document.querySelectorAll(".detailPage .card.container");
+          const cards      =
+            document.querySelectorAll(".detailPage .card.container");
+
           if (!masthead || !footer || cards.length < 2) return;
 
           const riddimCard = cards[0];
