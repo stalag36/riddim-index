@@ -731,3 +731,10 @@ body.indexPage .card .row:last-child{
     margin-left: -20px;
   }
 }
+
+/* スマホ時：詳細ページの曲行もインデックスと同じくらいの余白にする */
+@media (max-width:900px){
+  .songRow{
+    padding:10px 0;  /* もとの 8px → 10px に拡張 */
+  }
+}
