@@ -709,4 +709,7 @@ body.indexPage .card .row:last-child{
   :root{
     --fs:16px;
   }
+  .metaVal {
+    margin-left: -20px; /* ←お好みで調整：標準 -35px を右方向へ寄せる */
+  }
 }
