@@ -1,4 +1,4 @@
-/* v1.0.0 — RIDDIM INDEX base styles (PC font-up, dashed #13253b, aligned detail meta) */
+/* v1.1.0 — RIDDIM INDEX Twitch Dark Theme (colors only swap, layout unchanged) */
 :root{
   /* spacing tokens */
   --sp-2: 2px;
@@ -9,15 +9,15 @@
   --sp-12: 12px;
   --ctl-h: 36px;
 
-  /* colors */
-  --navy-bg:   #020c18;
-  --navy-card: #0a1729;
-  --navy-line: #13253b;
-  --navy-dash: #13253b; /* fixed per spec */
-  --mint:      #3bd6a8;
-  --text:      #e6f6f1;
-  --text-soft: #d8eef0;
-  --chip-bg:   #0f2138;
+  /* colors — Twitch ダークテーマ準拠 */
+  --navy-bg:   #0e0e10; /* page background */
+  --navy-card: #18181b; /* card background */
+  --navy-line: #2a2a2d; /* solid line */
+  --navy-dash: #2a2a2d; /* dashed line */
+  --mint:      #9146ff; /* accent (Twitch Purple) */
+  --text:      #efeff1; /* main text */
+  --text-soft: #adadb8; /* secondary text */
+  --chip-bg:   #1f1f23; /* input/select background */
 
   /* base font size (mobile / tablet) */
   --fs: 14px;
@@ -75,7 +75,7 @@ body {
 
 .title{
   margin:0;
-  font-size:28px;
+  font-size:28px;   /* タイトル大きめ */
   font-weight:800;
   letter-spacing:.2px;
 }
@@ -101,7 +101,7 @@ body {
   color:inherit;
   text-decoration:none;
   cursor:pointer;
-  font-family:"Anton", sans-serif; /* タイトルのみ Anton に */
+  /* Anton はキャンセル → 本文と同じシステムフォントを使う */
 }
 
 .titleLink:visited{
@@ -218,7 +218,7 @@ body {
 .sortBtn.active{
   border-color:var(--mint);
   color:var(--mint);
-  background:#10263f;
+  background:#232329;
 }
 
 .sortBtn .dir{
