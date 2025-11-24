@@ -401,9 +401,9 @@ body{
 /* Riddim名 / PICKUP 見出し */
 .cardHead__title{
   margin:0;
-  font-size:16px;
-  font-weight:500;
-  letter-spacing:.2px;
+  font-size:18px;
+  font-weight:400;
+  letter-spacing:0;
   color:var(--text);
   padding-left:var(--title-pad-left); /* = 16px from card inner */
   flex:0 1 auto;
@@ -493,6 +493,8 @@ body{
   padding:8px 0;
   border-bottom:1px dashed var(--navy-dash);
   color:var(--text-soft);
+  position:relative;   /* ← ホバー用レイヤーの基準 */
+  overflow:hidden;     /* ← はみ出し防止 */
 }
 
 .songRow:last-child{
@@ -527,16 +529,30 @@ body{
   pointer-events:none;
 }
 
-/* Detail song hover（PC の :hover） */
+/* Detail song hover: インデックスと同じく ::before で破線を避ける */
+.songRow::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  bottom:0;
+  background:rgba(255,255,255,0.05); /* 0.05 に統一 */
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .12s ease;
+}
+
+/* PC の :hover */
 @media (hover:hover){
-  .songRow:hover{
-    background:rgba(255,255,255,0.05); /* ここも 0.05 に統一 */
+  .songRow:hover::before{
+    opacity:1;
   }
 }
 
-/* Detail song touch-hover（スマホ用） */
-.songRow.touch-hover{
-  background:rgba(255,255,255,0.05);
+/* スマホ用 touch-hover（detail.js からクラス付与） */
+.songRow.touch-hover::before{
+  opacity:1;
 }
 
 /* Songs align using UL padding; LI has no extra left padding */
