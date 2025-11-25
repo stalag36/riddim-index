@@ -8,23 +8,44 @@
   <!-- ★ SEO用 description -->
   <meta name="description" content="RIDDIM INDEX（リディム・インデックス）は、AIを用いてレゲエのリディム情報を体系的に整理した独自のデータベースです。" />
 
-  <!-- ★ 統一＆最適化した title -->
+  <!-- ★ canonical（Googleに正規URLを伝える） -->
+  <link rel="canonical" href="https://italisle.jp/" />
+
+  <!-- ★ タイトル最適化 -->
   <title>RIDDIM INDEX – レゲエ・リディム データベース</title>
 
+  <!-- ファビコン -->
   <link rel="icon" href="ITALISLE.svg" type="image/svg+xml">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- ★ JSON-LD（WebSite としての構造化データ） -->
+  <!-- ★ OGP（SNSカード：LINE/Twitter/Facebook/Slackなど） -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="RIDDIM INDEX" />
+  <meta property="og:title" content="RIDDIM INDEX – レゲエ・リディム データベース" />
+  <meta property="og:description" content="RIDDIM INDEX（リディム・インデックス）は、AIを用いてレゲエのリディム情報を体系的に整理した独自のデータベースです。" />
+  <meta property="og:url" content="https://italisle.jp/" />
+
+  <!-- ※ og:image は後であなた好みの画像を作って指定できます -->
+  <!-- 例： <meta property="og:image" content="https://italisle.jp/ogp.png" /> -->
+
+  <!-- ★ Twitterカード -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="RIDDIM INDEX – レゲエ・リディム データベース" />
+  <meta name="twitter:description" content="RIDDIM INDEX（リディム・インデックス）は、AIを用いてレゲエのリディム情報を体系的に整理した独自のデータベースです。" />
+
+  <!-- ★ JSON-LD：サイト内検索機能（SearchAction） -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "RIDDIM INDEX",
     "url": "https://italisle.jp/",
-    "description": "RIDDIM INDEX（リディム・インデックス）は、AIを用いてレゲエのリディム情報を体系的に整理した独自のデータベースです。",
-    "publisher": {
-      "@type": "Organization",
-      "name": "ITALISLE"
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://italisle.jp/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
     }
   }
   </script>
@@ -46,7 +67,6 @@
     <select id="labelSelect" aria-label="レーベルプルダウン">
       <option value="All">レーベル（ALL）</option>
     </select>
-
     <select id="yearSelect" aria-label="年代プルダウン">
       <option value="All">年代（ALL）</option>
     </select>
@@ -60,7 +80,7 @@
     <div class="columns sticky-head" role="row">
       <div id="hName"  class="col name"  role="columnheader" aria-sort="ascending">Riddim</div>
       <div id="hLabel" class="col label" role="columnheader" aria-sort="none">レーベル</div>
-      <div id="hYear"  class="col year"  role="columnheader" aria-sort="none">リリース年</div>
+      <div id="hYear"  class="col year" role="columnheader" aria-sort="none">リリース年</div>
     </div>
     <div id="list" class="list" role="rowgroup"></div>
   </section>
@@ -71,6 +91,5 @@
     ChatGPTによって作成しているため、情報は必ずしも正しいとは限りません。<br>
     重要な情報は確認するようにしてください。
   </footer>
-
 </body>
 </html>
