@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- トップページ -->
   <url>
     <loc>https://italisle.jp/</loc>
   </url>
+
+  <!-- 詳細ページ -->
+  <url>
+    <loc>https://italisle.jp/detail.html</loc>
+  </url>
+
 </urlset>
