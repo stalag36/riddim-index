@@ -1,5 +1,5 @@
 /* ============================================================
-   RIDDIM INDEX detail.js  v1.2
+   RIDDIM INDEX detail.js  v1.3 (Supabase fav count 対応)
    ============================================================ */
 
 (function () {
@@ -43,9 +43,51 @@
   const cleanLabel = (s) =>
     s ? s.replace(/\(\d+\)/g, "").trim() : s;
 
+  /* ============================================================
+     2. Supabase 関連（お気に入り人数カウント用）
+     ============================================================ */
+
+  // HTML 側で設定したグローバルを読む想定
+  const SUPABASE_URL = window.SUPABASE_URL || "";
+  const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "";
+
+  let supabaseClient = null;
+  function getSupabaseClient() {
+    try {
+      if (supabaseClient) return supabaseClient;
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
+      if (!window.supabase || !window.supabase.createClient) return null;
+      supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+      );
+      return supabaseClient;
+    } catch {
+      return null;
+    }
+  }
+
+  // ユーザー登録なしで一意っぽいIDをローカルに保存
+  const LOCAL_USER_ID_KEY = "riddimIndexUserId";
+  function getLocalUserId() {
+    let id = null;
+    try {
+      id = localStorage.getItem(LOCAL_USER_ID_KEY);
+      if (id) return id;
+      if (window.crypto && crypto.randomUUID) {
+        id = crypto.randomUUID();
+      } else {
+        id = "u_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+      }
+      localStorage.setItem(LOCAL_USER_ID_KEY, id);
+      return id;
+    } catch {
+      return "anon";
+    }
+  }
 
   /* ============================================================
-     2. お気に入り / トースト共通
+     3. お気に入り（ローカル） / トースト共通
      ============================================================ */
 
   const FAVORITES_KEY = "riddimFavorites";
@@ -145,9 +187,76 @@
     }
   });
 
+  /* ============================================================
+     4. Supabase とお気に入りの同期 & カウント表示
+     ============================================================ */
+
+  // ★ 表示用：「★1」のように出す
+  function updateFavoriteCount(count) {
+    const el = document.getElementById("favCount");
+    if (!el) return;
+    const n = typeof count === "number" && count > 0 ? count : 0;
+    el.textContent = String(n);
+  }
+
+  async function syncFavoriteToSupabase(riddimKey, isFav) {
+    const client = getSupabaseClient();
+    if (!client || !riddimKey) return;
+
+    const userId = getLocalUserId();
+
+    try {
+      if (isFav) {
+        // まず同じ user_id & riddim_key を消してから 1件 Insert
+        await client
+          .from("favorites")
+          .delete()
+          .eq("user_id", userId)
+          .eq("riddim_key", riddimKey);
+
+        await client.from("favorites").insert({
+          user_id: userId,
+          riddim_key: riddimKey,
+        });
+      } else {
+        // お気に入り解除 → 自分の分を削除
+        await client
+          .from("favorites")
+          .delete()
+          .eq("user_id", userId)
+          .eq("riddim_key", riddimKey);
+      }
+    } catch (e) {
+      console.warn("syncFavoriteToSupabase error:", e);
+    }
+  }
+
+  async function refreshFavoriteCount(riddimKey) {
+    const client = getSupabaseClient();
+    if (!client || !riddimKey) return;
+
+    try {
+      const { count, error } = await client
+        .from("favorites")
+        .select("*", { count: "exact", head: true })
+        .eq("riddim_key", riddimKey);
+
+      if (error) {
+        console.warn("fav count error:", error);
+        updateFavoriteCount(0);
+        return;
+      }
+
+      const n = typeof count === "number" ? count : 0;
+      updateFavoriteCount(n);
+    } catch (e) {
+      console.warn("refreshFavoriteCount exception:", e);
+      updateFavoriteCount(0);
+    }
+  }
 
   /* ============================================================
-     3. PICKUP 行 タッチホバー（スマホ）
+     5. PICKUP 行 タッチホバー（スマホ）
      ============================================================ */
 
   function setupTouchHoverForSongs() {
@@ -186,21 +295,20 @@
     );
   }
 
-
   /* ============================================================
-     4. メイン処理
+     6. メイン処理
      ============================================================ */
 
   async function load() {
     try {
-      /* --- 4-1. パラメータ / JSON 読み込み --- */
+      /* --- 6-1. パラメータ / JSON 読み込み --- */
 
       const rawRiddim = getParam("riddim");
       if (!rawRiddim) return;
 
       toastEl = document.getElementById("toast") || null;
 
-      const favKey = rawRiddim;
+      const favKey = rawRiddim; // Supabase 側もこれを riddim_key として使う
       const key = normalizeFilenameKey(rawRiddim);
       if (!key) return;
 
@@ -243,8 +351,7 @@
         (rec.name   && String(rec.name).trim()) ||
         rawRiddim;
 
-
-      /* --- 4-2. タイトル / お気に入りボタン --- */
+      /* --- 6-2. タイトル / お気に入りボタン --- */
 
       document.title = "RIDDIM INDEX – " + displayName;
       setText("riddimTitle", displayName);
@@ -254,7 +361,10 @@
         // 初期表示時は idle アニメも有効にする
         setFavVisual(favBtn, favKey, true);
 
-        favBtn.addEventListener("click", () => {
+        // Supabase 側のカウント初期表示
+        refreshFavoriteCount(favKey);
+
+        favBtn.addEventListener("click", async () => {
           playRipple(favBtn);
 
           const wasFav = isFavorite(favKey);
@@ -285,11 +395,17 @@
 
             showToast(`${titleForToast}\nお気に入りを解除しました`);
           }
+
+          // Supabase と同期 & カウント更新（順番に await してズレを減らす）
+          await syncFavoriteToSupabase(favKey, nowFav);
+          await refreshFavoriteCount(favKey);
         });
+      } else {
+        // ボタンが無い場合もカウントだけは更新しておく
+        refreshFavoriteCount(favKey);
       }
 
-
-      /* --- 4-3. メタ情報 --- */
+      /* --- 6-3. メタ情報 --- */
 
       const baseLabel =
         rec.label ||
@@ -316,8 +432,7 @@
 
       setText("aka", akaArr.length ? akaArr.filter(Boolean).join(" ／ ") : "—");
 
-
-      /* --- 4-4. PICKUP 展開 --- */
+      /* --- 6-4. PICKUP 展開 --- */
 
       const ul = document.getElementById("pickup");
       if (!ul) return;
@@ -417,8 +532,7 @@
 
       setupTouchHoverForSongs();
 
-
-      /* --- 4-5. YouTube ボタン --- */
+      /* --- 6-5. YouTube ボタン --- */
 
       const ytBtn = document.getElementById("ytRiddimBtn");
       if (ytBtn) {
@@ -435,8 +549,7 @@
         };
       }
 
-
-      /* --- 4-6. PICKUP カード高さ調整 --- */
+      /* --- 6-6. PICKUP カード高さ調整 --- */
 
       function adjustPickupHeight() {
         try {
@@ -471,8 +584,7 @@
       requestAnimationFrame(adjustPickupHeight);
       window.addEventListener("resize", adjustPickupHeight);
 
-
-      /* --- 4-7. JSON-LD --- */
+      /* --- 6-7. JSON-LD --- */
 
       function injectJsonLd(rec, displayName, baseLabel, baseYear, producer, akaArr) {
         const ld = {
@@ -510,9 +622,8 @@
     }
   }
 
-
   /* ============================================================
-     5. 実行
+     7. 実行
      ============================================================ */
 
   if (document.readyState === "loading") {

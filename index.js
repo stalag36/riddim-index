@@ -1,5 +1,5 @@
 /* ============================================================
-   RIDDIM INDEX index.js  v1.2
+   RIDDIM INDEX index.js  v1.3 (Supabase fav sync 対応)
    ============================================================ */
 
 (function () {
@@ -81,7 +81,83 @@
 
 
     /* ============================================================
-       3. お気に入り管理（localStorage）
+       3. Supabase 関連（お気に入り人数カウント用と同じプロジェクト）
+       ============================================================ */
+
+    const SUPABASE_URL      = window.SUPABASE_URL || "";
+    const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "";
+
+    let supabaseClient = null;
+    function getSupabaseClient() {
+      try {
+        if (supabaseClient) return supabaseClient;
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
+        if (!window.supabase || !window.supabase.createClient) return null;
+        supabaseClient = window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_ANON_KEY
+        );
+        return supabaseClient;
+      } catch {
+        return null;
+      }
+    }
+
+    // ユーザー登録なしで一意っぽいIDをローカルに保存
+    const LOCAL_USER_ID_KEY = "riddimIndexUserId";
+    function getLocalUserId() {
+      let id = null;
+      try {
+        id = localStorage.getItem(LOCAL_USER_ID_KEY);
+        if (id) return id;
+        if (window.crypto && crypto.randomUUID) {
+          id = crypto.randomUUID();
+        } else {
+          id = "u_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+        }
+        localStorage.setItem(LOCAL_USER_ID_KEY, id);
+        return id;
+      } catch {
+        return "anon";
+      }
+    }
+
+    // インデックス側の★操作を Supabase に同期
+    async function syncFavoriteToSupabase(riddimKey, isFav) {
+      const client = getSupabaseClient();
+      if (!client || !riddimKey) return;
+
+      const userId = getLocalUserId();
+
+      try {
+        if (isFav) {
+          // まず同じ user_id & riddim_key を消してから 1件 Insert
+          await client
+            .from("favorites")
+            .delete()
+            .eq("user_id", userId)
+            .eq("riddim_key", riddimKey);
+
+          await client.from("favorites").insert({
+            user_id:    userId,
+            riddim_key: riddimKey,
+          });
+        } else {
+          // お気に入り解除 → 自分の分を削除
+          await client
+            .from("favorites")
+            .delete()
+            .eq("user_id", userId)
+            .eq("riddim_key", riddimKey);
+        }
+      } catch (e) {
+        console.warn("syncFavoriteToSupabase (index) error:", e);
+      }
+    }
+
+
+    /* ============================================================
+       4. お気に入り管理（localStorage）
        ============================================================ */
 
     const FAVORITES_KEY = "riddimFavorites";
@@ -121,7 +197,7 @@
 
 
     /* ============================================================
-       4. トースト / ハプティック / Ripple
+       5. トースト / ハプティック / Ripple
        ============================================================ */
 
     let toastTimer = null;
@@ -168,7 +244,7 @@
 
 
     /* ============================================================
-       5. リスト高さ調整
+       6. リスト高さ調整
        ============================================================ */
 
     function fitListHeight() {
@@ -194,7 +270,7 @@
 
 
     /* ============================================================
-       6. ユーティリティ
+       7. ユーティリティ
        ============================================================ */
 
     function makeQueryRe(s) {
@@ -244,7 +320,7 @@
 
 
     /* ============================================================
-       7. detail.json プレフェッチ
+       8. detail.json プレフェッチ
        ============================================================ */
 
     const prefetchedKeys = new Set();
@@ -292,7 +368,7 @@
 
 
     /* ============================================================
-       8. セレクトボックス生成
+       9. セレクトボックス生成
        ============================================================ */
 
     function buildOptions() {
@@ -332,7 +408,7 @@
 
 
     /* ============================================================
-       9. バーチャルリスト準備
+       10. バーチャルリスト準備
        ============================================================ */
 
     const outer = document.createElement("div");
@@ -402,7 +478,7 @@
 
 
     /* ============================================================
-       10. フィルタ・ソート
+       11. フィルタ・ソート
        ============================================================ */
 
     function applyFiltersAndSort() {
@@ -491,7 +567,7 @@
 
 
     /* ============================================================
-       11. イベント設定
+       12. イベント設定
        ============================================================ */
 
     const toggleSortByHeader = (key) => {
@@ -600,7 +676,7 @@
 
 
     /* ============================================================
-       12. レンダリング（バーチャルリスト）
+       13. レンダリング（バーチャルリスト）
        ============================================================ */
 
     // ★の見た目 + アニメクラス付け
@@ -641,7 +717,7 @@
 
       for (let i = start; i < end; i++) {
         const it  = visible[i];
-        const key = it.riddim;
+        const key = it.riddim;   // detail.html?riddim= でもこの文字列を渡している
 
         const row = document.createElement("div");
         row.className = "row row--click";
@@ -697,6 +773,10 @@
             showToast(`${titleForToast}\nお気に入りを解除しました`);
           }
 
+          // ★ Supabase と同期（index → detail 共通鍵：riddim名そのまま）
+          syncFavoriteToSupabase(key, nowFav);
+
+          // 「お気に入りのみ」フィルタ中なら再フィルタ
           if (filterFavoritesOnly) applyFiltersAndSort();
         });
 
@@ -747,7 +827,7 @@
 
 
     /* ============================================================
-       13. データ読み込み
+       14. データ読み込み
        ============================================================ */
 
     fetch("index.json")

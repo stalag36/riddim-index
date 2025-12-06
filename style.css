@@ -385,6 +385,7 @@ body{
   margin-left: -6px;
 }
 
+/* 共通お気に入りボタン（☆） */
 .favToggle{
   border: none;
   background: transparent;
@@ -506,21 +507,17 @@ body{
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: flex-start;
 }
 
+/* タイトルは左寄せ・伸びる（ヘッダーには☆も人数も置かない） */
 .cardHead__title{
   margin: 0;
   font-size: 18px;
   font-weight: 400;
   padding-left: var(--title-pad-left);
   color: var(--text-main);
-}
-
-.detailPage .cardHead__row .favToggle{
-  font-size: 18px;
-  margin-right: -10px;
-  position: relative;
-  top: 1px;
+  flex: 0 1 auto;
 }
 
 .metaGrid{
@@ -546,6 +543,43 @@ body{
 .metaVal{
   color: var(--text-soft);
   margin-left: -60px;
+}
+
+/* プロデューサー行の下に置く「☆(人数)」専用行
+   上のラインは表示しない（区切り線なし） */
+.metaRow.metaRow--fav{
+  grid-template-columns: 1fr;
+  padding: 7px 6px;
+  margin-top: 0;
+  border-top: none;
+  border-bottom: none;
+}
+
+.metaRow.metaRow--fav .metaKey{
+  display: none;
+}
+
+.metaRow.metaRow--fav .metaVal{
+  margin-left: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* この行に出す☆（人数を増減させる） */
+.metaRow.metaRow--fav .favToggle{
+  margin-right: 0;
+  top: 0;
+}
+
+/* 「(人数)」部分。JSから "(1)" などの文字列を入れる想定 */
+.favCount{
+  font-size: 13px;
+  color: var(--text-soft);
+  opacity: 0.9;
+  white-space: nowrap;
+  min-width: 1.4em;
+  text-align: left;
 }
 
 .songList{
@@ -773,6 +807,12 @@ body.indexPage .card .row:last-child{
 @media (max-width:700px){
   :root{
     --fs: 12px;
+  }
+}
+
+@media (max-width:700px){
+  .metaRow.metaRow--fav{
+    padding: 5px;
   }
 }
 

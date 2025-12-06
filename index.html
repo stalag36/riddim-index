@@ -112,6 +112,15 @@
     <div id="list" class="list" role="rowgroup"></div>
   </section>
 
+  <!-- ▼ Supabase（index でも detail と同じプロジェクトを使う） -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // detail.html と同じ値にすること
+    window.SUPABASE_URL = "https://vlijhkkqszwlejnywidy.supabase.co";
+    window.SUPABASE_ANON_KEY = "sb_publishable_w55iXdKQ2XpFxjZA6OD2UA_aYtaSvJU";
+  </script>
+
+  <!-- アプリ本体 -->
   <script src="index.js"></script>
 
   <footer class="footerNote">

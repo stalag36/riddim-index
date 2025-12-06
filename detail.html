@@ -9,23 +9,11 @@
 
   <title>リディム詳細 | RIDDIM INDEX – レゲエ・リディム データベース</title>
 
-  <!-- ▼▼ ファビコン（PNG + SVG） ▼▼ -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="icon" type="image/png" href="favicon.png" />
 
   <link rel="stylesheet" href="style.css" />
 
-  <!-- OGP -->
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="RIDDIM INDEX" />
-  <meta property="og:title" content="リディム詳細 | RIDDIM INDEX – レゲエ・リディム データベース" />
-  <meta property="og:description" content="RIDDIM INDEX のリディム詳細ページ。レゲエのリディム情報をAIで整理し詳細を閲覧できます。" />
-  <meta property="og:url" content="https://italisle.jp/detail.html" />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="リディム詳細 | RIDDIM INDEX – レゲエ・リディム データベース" />
-  <meta name="twitter:description" content="RIDDIM INDEX のリディム詳細ページ。レゲエのリディム情報をAIで整理し詳細を閲覧できます。" />
 </head>
 
 <body class="detailPage">
@@ -43,15 +31,10 @@
     <div class="cardHead">
       <div class="cardHead__row">
 
-        <!-- お気に入りトグル -->
-        <button id="favDetailToggle" class="favToggle" type="button" aria-label="お気に入り">
-          ☆
-        </button>
-
-        <!-- リディム名 -->
+        <!-- ▼ リディム名 -->
         <h2 id="riddimTitle" class="cardHead__title"></h2>
 
-        <!-- YouTube検索ボタン -->
+        <!-- ▼ YouTube検索ボタン（位置をリディム名の直右へ） -->
         <button
           id="ytRiddimBtn"
           class="ytBtn"
@@ -85,6 +68,21 @@
         <div class="metaVal" id="producer">—</div>
       </div>
 
+      <!-- ▼ ☆（人数）行：ライン削除済み -->
+      <div class="metaRow metaRow--fav" style="border-bottom:none;">
+        <div class="metaKey"></div>
+        <div class="metaVal">
+          <button
+            id="favDetailToggle"
+            class="favToggle"
+            type="button"
+            aria-label="お気に入り">
+            ☆
+          </button>
+          <span id="favCount" class="favCount">(0)</span>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -95,6 +93,13 @@
     </div>
     <ul id="pickup" class="songList"></ul>
   </section>
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.SUPABASE_URL = "https://vlijhkkqszwlejnywidy.supabase.co";
+    window.SUPABASE_ANON_KEY = "sb_publishable_w55iXdKQ2XpFxjZA6OD2UA_aYtaSvJU";
+  </script>
 
   <script src="detail.js"></script>
 
