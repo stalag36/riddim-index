@@ -1,28 +1,28 @@
+/* ============================================================
+   RIDDIM INDEX detail.js  v1.2
+   ============================================================ */
+
 (function () {
   /* ============================================================
-     1. URL パラメータ / 共通ヘルパー
+     1. 基本ヘルパー
      ============================================================ */
 
-  // クエリパラメータ取得
   function getParam(key) {
     return new URLSearchParams(location.search).get(key) || "";
   }
 
-  // riddim名 → ファイル名用キー（index側と揃える）
   function normalizeFilenameKey(raw) {
     if (!raw) return "";
-
     let s = raw.trim();
-    s = s.replace(/\s+riddim\s*$/i, "");   // 末尾の "riddim" を削除
-    s = s.replace(/\([^)]*\)/g, "");      // () 内を削除
-    s = s.replace(/\./g, "_");            // . → _
-    s = s.replace(/\s+/g, "_");           // 空白 → _
+    s = s.replace(/\s+riddim\s*$/i, "");
+    s = s.replace(/\([^)]*\)/g, "");
+    s = s.replace(/\./g, "_");
+    s = s.replace(/\s+/g, "_");
     s = s.toLowerCase();
-    s = s.replace(/[^a-z0-9_]/g, "");     // 許可文字だけ
+    s = s.replace(/[^a-z0-9_]/g, "");
     return s;
   }
 
-  // 空なら "—" を入れてくれるテキストセット
   function setText(id, value) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -35,21 +35,18 @@
     el.textContent = s || "—";
   }
 
-  // タイトルやアーティストから () を取ったりして整形
   const cleanTitle = (s) =>
     s ? s.replace(/\([^)]*\)/g, "").replace(/\s+/g, " ").trim() : s;
 
   const cleanArtist = cleanTitle;
 
-  // レーベル名の "(2)" などを除去
   const cleanLabel = (s) =>
     s ? s.replace(/\(\d+\)/g, "").trim() : s;
 
 
-
   /* ============================================================
-   2. お気に入り共通ヘルパー + トースト
-   ============================================================ */
+     2. お気に入り / トースト共通
+     ============================================================ */
 
   const FAVORITES_KEY = "riddimFavorites";
 
@@ -84,28 +81,21 @@
     saveFavorites(favs);
   }
 
-  // ★ ビジュアル（初期状態）
   function setFavVisual(btn, key) {
     const on = isFavorite(key);
     btn.textContent = on ? "★" : "☆";
     btn.classList.toggle("is-on", on);
   }
 
-
-  // ----------------------------------------------------
-  // ★★★ iOS モーダル風トースト（中央に表示） ★★★
-  // ----------------------------------------------------
-  let toastEl = null;
+  let toastEl   = null;
   let toastTimer = null;
 
   function showToast(message) {
     if (!toastEl) return;
 
     toastEl.textContent = message;
-
-    // 連打対応：アニメをリスタート
     toastEl.classList.remove("show");
-    void toastEl.offsetWidth; // reflow
+    void toastEl.offsetWidth;
     toastEl.classList.add("show");
 
     if (toastTimer) clearTimeout(toastTimer);
@@ -114,14 +104,22 @@
     }, 2000);
   }
 
-  // スマホ用の軽い振動（対応端末のみ）
   function hapticLight() {
     if (navigator.vibrate) {
-      navigator.vibrate(20); // ぷるっ
+      navigator.vibrate(20);
     }
   }
 
-  // トースト自体をタップで閉じる
+  function playRipple(btn) {
+    const ripple = document.createElement("span");
+    ripple.className = "favRipple";
+    btn.appendChild(ripple);
+
+    ripple.addEventListener("animationend", () => {
+      ripple.remove();
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     toastEl = document.getElementById("toast");
     if (toastEl) {
@@ -134,7 +132,7 @@
 
 
   /* ============================================================
-     3. スマホ用タッチホバー（PICKUP 行）
+     3. PICKUP 行 タッチホバー（スマホ）
      ============================================================ */
 
   function setupTouchHoverForSongs() {
@@ -160,7 +158,6 @@
       );
     });
 
-    // 画面の別の場所をタッチしたらホバー解除
     document.addEventListener(
       "touchstart",
       (e) => {
@@ -175,26 +172,20 @@
   }
 
 
-
   /* ============================================================
      4. メイン処理
      ============================================================ */
 
   async function load() {
     try {
-      /* ------------------------------
-         4-1. riddim パラメータとキー
-         ------------------------------ */
+      /* --- 4-1. パラメータ / JSON 読み込み --- */
+
       const rawRiddim = getParam("riddim");
       if (!rawRiddim) return;
 
-      // トースト要素（detailページ用）
       toastEl = document.getElementById("toast") || null;
 
-      // お気に入り用キー（インデックス同様、生のクエリ文字列）
       const favKey = rawRiddim;
-
-      // JSON ファイル名用キー
       const key = normalizeFilenameKey(rawRiddim);
       if (!key) return;
 
@@ -207,19 +198,13 @@
 
       let rec = null;
 
-      /* ------------------------------
-         4-2. sessionStorage キャッシュ
-         ------------------------------ */
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         try {
           rec = JSON.parse(cached);
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
 
-      // キャッシュなし → fetch
       if (!rec) {
         for (const url of candidates) {
           try {
@@ -228,9 +213,7 @@
             rec = await res.json();
             sessionStorage.setItem(cacheKey, JSON.stringify(rec));
             break;
-          } catch {
-            // ignore
-          }
+          } catch {}
         }
       }
 
@@ -246,54 +229,49 @@
         rawRiddim;
 
 
-
-      /* ------------------------------
-         4-3. タイトル / お気に入りボタン
-         ------------------------------ */
+      /* --- 4-2. タイトル / お気に入りボタン --- */
 
       document.title = "RIDDIM INDEX – " + displayName;
       setText("riddimTitle", displayName);
 
       const favBtn = document.getElementById("favDetailToggle");
       if (favBtn) {
-        // 初期状態
         setFavVisual(favBtn, favKey);
 
-        // クリック時：ON → CSS側 .is-on でポップ＋フレア
-        //              OFF → .is-unfav を一瞬付与してポフっと消える
         favBtn.addEventListener("click", () => {
+          playRipple(favBtn);
+
           const wasFav = isFavorite(favKey);
 
-          toggleFavorite(favKey);      // 状態を反転
+          toggleFavorite(favKey);
           setFavVisual(favBtn, favKey);
 
           const nowFav = isFavorite(favKey);
 
+          const titleForToast =
+            (displayName && String(displayName).trim()) ||
+            rawRiddim ||
+            "（名称未設定）";
+
           if (!wasFav && nowFav) {
-            // ☆ → ★
-            showToast("お気に入りに追加しました");
-            hapticLight(); // ← 追加時だけ軽く振動
+            showToast(`${titleForToast}\nお気に入りに追加しました`);
+            hapticLight();
           } else if (wasFav && !nowFav) {
-            // ★ → ☆ に変わったときだけ「ポフっ…」アニメ
             favBtn.classList.remove("is-unfav");
-            // 再レイアウトでアニメをリスタート
             void favBtn.offsetWidth;
             favBtn.classList.add("is-unfav");
 
             setTimeout(() => {
               favBtn.classList.remove("is-unfav");
-            }, 260); // CSS の duration に合わせる
+            }, 260);
 
-            showToast("お気に入りを解除しました");
+            showToast(`${titleForToast}\nお気に入りを解除しました`);
           }
         });
       }
 
 
-
-      /* ------------------------------
-         4-4. メタ情報表示
-         ------------------------------ */
+      /* --- 4-3. メタ情報 --- */
 
       const baseLabel =
         rec.label ||
@@ -321,10 +299,7 @@
       setText("aka", akaArr.length ? akaArr.filter(Boolean).join(" ／ ") : "—");
 
 
-
-      /* ------------------------------
-         4-5. PICKUP 展開
-         ------------------------------ */
+      /* --- 4-4. PICKUP 展開 --- */
 
       const ul = document.getElementById("pickup");
       if (!ul) return;
@@ -332,11 +307,9 @@
 
       let picks = [];
 
-      // pickup が定義されている場合
       if (Array.isArray(rec.pickup) && rec.pickup.length) {
         const pickupArr = rec.pickup;
 
-        // { row_index, tier, role } 形式 → tracks から引き直す
         if (!("artist" in pickupArr[0]) && tracks.length) {
           const map = new Map(tracks.map((t) => [t.row_index, t]));
           pickupArr.forEach((p) => {
@@ -345,12 +318,10 @@
             picks.push({ ...base, tier: p.tier, role: p.role });
           });
         } else {
-          // すでに artist / title を持っている形式
           picks = pickupArr.slice();
         }
       }
 
-      // original があればピックアップに追加（重複回避）
       if (rec.original?.artist && rec.original?.title) {
         const orig = rec.original;
         const origKey = `${orig.artist}___${orig.title}`.toLowerCase();
@@ -359,7 +330,6 @@
         }
       }
 
-      // 年順ソート（数値あり優先）
       picks.sort((a, b) => {
         const ay = Number(a.year);
         const by = Number(b.year);
@@ -371,7 +341,6 @@
         return 0;
       });
 
-      // li を組み立て
       picks.forEach((p) => {
         let artist = cleanArtist(p.artist || "—");
         let title  = cleanTitle(p.title  || "—");
@@ -428,14 +397,10 @@
         ul.appendChild(li);
       });
 
-      // スマホ用タッチホバーを有効化
       setupTouchHoverForSongs();
 
 
-
-      /* ------------------------------
-         4-6. YouTube ボタン（riddim検索）
-         ------------------------------ */
+      /* --- 4-5. YouTube ボタン --- */
 
       const ytBtn = document.getElementById("ytRiddimBtn");
       if (ytBtn) {
@@ -453,10 +418,7 @@
       }
 
 
-
-      /* ------------------------------
-         4-7. PICKUP カード高さ調整
-         ------------------------------ */
+      /* --- 4-6. PICKUP カード高さ調整 --- */
 
       function adjustPickupHeight() {
         try {
@@ -485,19 +447,14 @@
             "--pickup-max-height",
             max + "px"
           );
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
 
       requestAnimationFrame(adjustPickupHeight);
       window.addEventListener("resize", adjustPickupHeight);
 
 
-
-      /* ------------------------------
-         4-8. 動的 JSON-LD を挿入
-         ------------------------------ */
+      /* --- 4-7. JSON-LD --- */
 
       function injectJsonLd(rec, displayName, baseLabel, baseYear, producer, akaArr) {
         const ld = {
@@ -517,7 +474,6 @@
           },
         };
 
-        // 既存の動的 JSON-LD を削除
         document
           .querySelectorAll('script[data-dynamic-jsonld]')
           .forEach((el) => el.remove());
@@ -537,15 +493,13 @@
   }
 
 
-
   /* ============================================================
-   5. 実行（DOM 完了後に load を呼ぶ）
-   ============================================================ */
+     5. 実行
+     ============================================================ */
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", load);
   } else {
     load();
   }
-
 })();
