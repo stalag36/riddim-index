@@ -529,10 +529,10 @@ body.menu-open .pageMenuDrawer{
   flex-direction: column;
   align-items: center;
   gap: 0;
-  margin-left: 2px;          /* ← 6px → 2px（文字に近づける） */
+  margin-left: 2px;            /* 文字に近づける */
   vertical-align: middle;
   line-height: 0;
-  transform: translateY(-2px); /* ← 少し上へ */
+  transform: translateY(-2px); /* 少し上へ（PC基準） */
 }
 
 .sortIcon{
@@ -544,7 +544,7 @@ body.menu-open .pageMenuDrawer{
   line-height: 0;
 }
 
-/* ▼▲の間をさらに詰める（値は好みで -2〜-6px） */
+/* ▼▲の間を詰める（PC基準） */
 .sortIcon.up{ margin-bottom: -4px; }
 .sortIcon.down{ margin-top: -4px; }
 
@@ -1265,24 +1265,38 @@ body.indexPage .card .row:last-child{ padding-bottom: 8px; }
   .rankBarTrack{ height: 9px; }
 }
 
-/* =========================================
-   Mobile: sort arrows align to text baseline
-   ========================================= */
+/* =========================================================
+   Mobile (max-width:900px): FORCE override sort arrows
+   - align arrows to text baseline
+   - tighten spacing between ▲▼ (mobile only)
+   ========================================================= */
+
 @media (max-width: 900px){
-  .columns .sortArrows{
-    /* 文字と同じ高さに合わせる */
-    line-height: 1;
-    margin-left: 4px;          /* 文字に少し寄せる（好みで 2〜6px） */
-    transform: translateY(1px); /* 上に来すぎるのを下げる（0〜2pxで調整） */
+
+  .columns .sortHead{
+    display: inline-flex !important;
+    align-items: baseline !important;
   }
 
-  /* スマホでは負マージン詰めを無効化してズレ防止 */
-  .columns .sortIcon.up{ margin-bottom: 0 !important; }
-  .columns .sortIcon.down{ margin-top: 0 !important; }
+  .columns .sortHead .sortArrows{
+    margin-left: 2px !important;           /* 文字に寄せる */
+    line-height: 1 !important;             /* 0をやめて基準を揃える */
+    transform: translateY(-1px) !important; /* 上に来すぎるのを下げる */
+    gap: 0 !important;
+  }
 
-  /* アイコン自体も少し小さくすると収まりが良い（任意） */
-  .columns .sortIcon{
-    width: 11px;
-    height: 11px;
+  .columns .sortHead .sortIcon{
+    width: 11px !important;
+    height: 11px !important;
+    display: block !important;
+    line-height: 0 !important;
+  }
+
+  .columns .sortHead .sortIcon.up{
+    margin-bottom: -3px !important; /* -3〜-7px */
+  }
+
+  .columns .sortHead .sortIcon.down{
+    margin-top: -4px !important;    /* -4〜-9px */
   }
 }
