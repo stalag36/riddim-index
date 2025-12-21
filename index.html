@@ -9,27 +9,31 @@
   <link rel="canonical" href="https://italisle.jp/" />
   <title>RIDDIM INDEX – レゲエ・リディム データベース</title>
 
+  <!-- favicon -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="shortcut icon" href="/favicon.ico">
 
-  <!-- ✅ preconnect（CDNの初回接続を前倒し） -->
+  <!-- CDN preconnect -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
-  <!-- ✅ CSS 非同期化（レンダリングブロック軽減） -->
+  <!-- CSS preload -->
   <link rel="preload" href="/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="/style.css"></noscript>
 
+  <!-- OGP -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="RIDDIM INDEX" />
   <meta property="og:title" content="RIDDIM INDEX – レゲエ・リディム データベース" />
   <meta property="og:description" content="RIDDIM INDEX（リディム・インデックス）は、レゲエのリディムを一覧で検索・閲覧できるデータベースです。" />
   <meta property="og:url" content="https://italisle.jp/" />
 
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="RIDDIM INDEX – レゲエ・リディム データベース" />
   <meta name="twitter:description" content="RIDDIM INDEX（リディム・インデックス）は、レゲエのリディムを一覧で検索・閲覧できるデータベースです。" />
 
+  <!-- JSON-LD -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -44,18 +48,16 @@
   }
   </script>
 
-  <!-- ✅ Supabase設定は先に置く（値だけ軽いのでOK） -->
+  <!-- Supabase config -->
   <script>
     window.SUPABASE_URL = "https://vlijhkkqszwlejnywidy.supabase.co";
     window.SUPABASE_ANON_KEY = "sb_publishable_w55iXdKQ2XpFxjZA6OD2UA_aYtaSvJU";
   </script>
 
-  <!-- ✅ Supabase JS は「必要になったら」ロードするためのヘルパ -->
+  <!-- Supabase lazy loader -->
   <script>
     window.loadSupabase = async function () {
-      if (window.supabase) return window.supabase; // 既にロード済み
-
-      // ESMで遅延ロード（レンダリングブロックしない）
+      if (window.supabase) return window.supabase;
       const mod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
       window.supabase = mod.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
       return window.supabase;
@@ -71,6 +73,7 @@
         <span class="ver">v1.3</span>
       </h1>
 
+      <!-- menu button -->
       <div class="pageMenuWrap">
         <button
           id="pageMenuBtn"
@@ -106,6 +109,7 @@
 
     <div class="titleline"></div>
 
+    <!-- search -->
     <input
       id="q"
       class="input"
@@ -116,6 +120,7 @@
     />
   </header>
 
+  <!-- filters -->
   <section class="filters container" id="filters">
     <select id="labelSelect" aria-label="レーベルプルダウン">
       <option value="All">レーベル（ALL）</option>
@@ -124,11 +129,22 @@
       <option value="All">年代（ALL）</option>
     </select>
 
-    <button id="filterFavorites" class="favFilterBtn" type="button" aria-pressed="false" aria-label="お気に入りのみ表示">
+    <button
+      id="filterFavorites"
+      class="favFilterBtn"
+      type="button"
+      aria-pressed="false"
+      aria-label="お気に入りのみ表示"
+    >
       ★ Favorites
     </button>
 
-    <button id="resetFilters" class="resetBtn" type="button" aria-label="検索条件をリセット">
+    <button
+      id="resetFilters"
+      class="resetBtn"
+      type="button"
+      aria-label="検索条件をリセット"
+    >
       ↻
     </button>
   </section>
@@ -137,16 +153,17 @@
     <div id="meta" class="meta"></div>
   </div>
 
+  <!-- list -->
   <section class="card container">
     <div class="columns sticky-head" role="row">
       <div id="hName"  class="col name"  role="columnheader" aria-sort="ascending">Riddim</div>
       <div id="hLabel" class="col label" role="columnheader" aria-sort="none">レーベル</div>
-      <div id="hYear"  class="col year" role="columnheader" aria-sort="none">リリース年</div>
+      <div id="hYear"  class="col year"  role="columnheader" aria-sort="none">リリース年</div>
     </div>
     <div id="list" class="list" role="rowgroup"></div>
   </section>
 
-  <!-- ▼ 右上メニュー開閉（そのまま） -->
+  <!-- menu script -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const btn = document.getElementById("pageMenuBtn");
@@ -160,10 +177,8 @@
       const openMenu = () => {
         if (isOpen) return;
         isOpen = true;
-
         menu.hidden = false;
         backdrop.hidden = false;
-
         requestAnimationFrame(() => {
           document.body.classList.add("menu-open");
           btn.classList.add("is-open");
@@ -174,11 +189,9 @@
       const closeMenu = () => {
         if (!isOpen) return;
         isOpen = false;
-
         document.body.classList.remove("menu-open");
         btn.classList.remove("is-open");
         btn.setAttribute("aria-expanded", "false");
-
         const onEnd = () => {
           if (isOpen) return;
           menu.hidden = true;
@@ -188,11 +201,9 @@
         menu.addEventListener("transitionend", onEnd);
       };
 
-      const toggleMenu = () => (isOpen ? closeMenu() : openMenu());
-
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        toggleMenu();
+        isOpen ? closeMenu() : openMenu();
       });
 
       closeBtn?.addEventListener("click", closeMenu);
@@ -202,20 +213,13 @@
         link.addEventListener("click", closeMenu);
       });
 
-      document.addEventListener("click", (e) => {
-        if (!isOpen) return;
-        if (menu.contains(e.target)) return;
-        if (btn.contains(e.target)) return;
-        closeMenu();
-      });
-
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") closeMenu();
       });
     });
   </script>
 
-  <!-- ✅ アプリ本体：defer（レンダリングブロック回避） -->
+  <!-- app -->
   <script src="/index.js" defer></script>
 
   <footer class="footerNote">

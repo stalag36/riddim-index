@@ -1,11 +1,15 @@
 /* ============================================================
-   RIDDIM INDEX index.js  v1.3 (Supabase fav sync 対応 / 遅延ロード対応)
+   RIDDIM INDEX index.js  v1.3
+   - Virtual list
+   - Favorites (localStorage) + Supabase sync (lazy load)
+   - Row is <a class="row row--click"> (full-row link)
    ============================================================ */
 
-(function () {
+(() => {
+  "use strict";
 
   /* ============================================================
-     1. タッチホバー（モバイル）
+     1) Touch hover (mobile)
      ============================================================ */
 
   let currentTouchedKey = null;
@@ -14,7 +18,6 @@
     "touchstart",
     (ev) => {
       const row = ev.target.closest(".row.row--click");
-
       if (!row) {
         currentTouchedKey = null;
         const prev = document.querySelector(".row.row--click.touch-hover");
@@ -35,74 +38,64 @@
     { passive: true }
   );
 
-
   /* ============================================================
-     2. DOM 準備
+     2) Init
      ============================================================ */
 
   document.addEventListener("DOMContentLoaded", init);
 
   function init() {
-
-    /* ------------------------------------------------------------
-       2-1. DOM 取得 / 状態
-       ------------------------------------------------------------ */
-
-    const listEl       = document.getElementById("list");
+    const listEl = document.getElementById("list");
     if (!listEl) return;
 
-    const metaEl       = document.getElementById("meta");
-    const qInput       = document.getElementById("q");
-    const labelSelect  = document.getElementById("labelSelect");
-    const yearSelect   = document.getElementById("yearSelect");
-    const hName        = document.getElementById("hName");
-    const hLabel       = document.getElementById("hLabel");
-    const hYear        = document.getElementById("hYear");
+    const metaEl = document.getElementById("meta");
+    const qInput = document.getElementById("q");
+    const labelSelect = document.getElementById("labelSelect");
+    const yearSelect = document.getElementById("yearSelect");
+    const hName = document.getElementById("hName");
+    const hLabel = document.getElementById("hLabel");
+    const hYear = document.getElementById("hYear");
     const favFilterBtn = document.getElementById("filterFavorites");
-    const resetBtn     = document.getElementById("resetFilters");
-    const toastEl      = document.getElementById("toast");
+    const resetBtn = document.getElementById("resetFilters");
+    const toastEl = document.getElementById("toast");
 
-    let items   = [];
+    let items = [];
     let visible = [];
 
-    let q                   = "";
-    let qRe                 = null;
-    let filterLabel         = "All";
-    let filterDecade        = "All";
-    let sortKey             = "riddim";
-    let sortDir             = "asc";
+    let q = "";
+    let qRe = null;
+    let filterLabel = "All";
+    let filterDecade = "All";
+    let sortKey = "riddim";
+    let sortDir = "asc";
     let filterFavoritesOnly = false;
 
-    // 初期描画かどうか（★アニメON制御用）
+    // ★ animation control
     let isFirstRender = true;
-
-    // スクロール停止後にアイドルアニメを再開するためのタイマー
     let favIdleTimer = null;
 
-
     /* ============================================================
-       3. Supabase 関連（お気に入り人数カウント用と同じプロジェクト）
-       ※ PageSpeed対策：supabase-js を遅延ロードしてから createClient
+       3) Supabase (lazy load) - favorites sync
        ============================================================ */
 
-    const SUPABASE_URL      = window.SUPABASE_URL || "";
+    const SUPABASE_URL = window.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "";
 
     let supabaseClient = null;
 
-    // ✅ 遅延ロード対応（window.loadSupabase があればそれを使う）
+    // NOTE:
+    // - If index.html defines window.loadSupabase() that returns a client, use it.
+    // - Otherwise, fallback to global window.supabase.createClient if available.
     async function getSupabaseClient() {
       try {
         if (supabaseClient) return supabaseClient;
         if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
 
-        // index.html 側で定義した遅延ローダーを優先
         if (typeof window.loadSupabase === "function") {
-          supabaseClient = await window.loadSupabase();
+          supabaseClient = await window.loadSupabase(); // should return client
           return supabaseClient;
         }
 
-        // 旧方式（もし既に global に supabase が居るなら）
         if (window.supabase && window.supabase.createClient) {
           supabaseClient = window.supabase.createClient(
             SUPABASE_URL,
@@ -117,13 +110,13 @@
       }
     }
 
-    // ユーザー登録なしで一意っぽいIDをローカルに保存
     const LOCAL_USER_ID_KEY = "riddimIndexUserId";
     function getLocalUserId() {
       let id = null;
       try {
         id = localStorage.getItem(LOCAL_USER_ID_KEY);
         if (id) return id;
+
         if (window.crypto && crypto.randomUUID) {
           id = crypto.randomUUID();
         } else {
@@ -136,7 +129,6 @@
       }
     }
 
-    // インデックス側の★操作を Supabase に同期
     async function syncFavoriteToSupabase(riddimKey, isFav) {
       const client = await getSupabaseClient();
       if (!client || !riddimKey) return;
@@ -145,7 +137,6 @@
 
       try {
         if (isFav) {
-          // まず同じ user_id & riddim_key を消してから 1件 Insert
           await client
             .from("favorites")
             .delete()
@@ -153,11 +144,10 @@
             .eq("riddim_key", riddimKey);
 
           await client.from("favorites").insert({
-            user_id:    userId,
+            user_id: userId,
             riddim_key: riddimKey,
           });
         } else {
-          // お気に入り解除 → 自分の分を削除
           await client
             .from("favorites")
             .delete()
@@ -169,9 +159,8 @@
       }
     }
 
-
     /* ============================================================
-       4. お気に入り管理（localStorage）
+       4) Favorites (localStorage)
        ============================================================ */
 
     const FAVORITES_KEY = "riddimFavorites";
@@ -209,9 +198,8 @@
       saveFavorites(favs);
     }
 
-
     /* ============================================================
-       5. トースト / ハプティック / Ripple
+       5) Toast / haptic / ripple
        ============================================================ */
 
     let toastTimer = null;
@@ -231,19 +219,14 @@
     }
 
     function hapticLight() {
-      if (navigator.vibrate) {
-        navigator.vibrate(20);
-      }
+      if (navigator.vibrate) navigator.vibrate(20);
     }
 
     function playRipple(btn) {
       const ripple = document.createElement("span");
       ripple.className = "favRipple";
       btn.appendChild(ripple);
-
-      ripple.addEventListener("animationend", () => {
-        ripple.remove();
-      });
+      ripple.addEventListener("animationend", () => ripple.remove());
     }
 
     if (toastEl) {
@@ -256,9 +239,8 @@
       });
     }
 
-
     /* ============================================================
-       6. リスト高さ調整
+       6) List height
        ============================================================ */
 
     function fitListHeight() {
@@ -282,9 +264,8 @@
     window.addEventListener("orientationchange", fitListHeight, { passive: true });
     setTimeout(fitListHeight, 0);
 
-
     /* ============================================================
-       7. ユーティリティ
+       7) Utils
        ============================================================ */
 
     function makeQueryRe(s) {
@@ -299,9 +280,9 @@
       if (!q) return true;
       const t = q.toLowerCase();
       return (
-        it.riddim.toLowerCase().includes(t) ||
-        it.label.toLowerCase().includes(t) ||
-        String(it.year).includes(t)
+        String(it.riddim || "").toLowerCase().includes(t) ||
+        String(it.label || "").toLowerCase().includes(t) ||
+        String(it.year || "").includes(t)
       );
     };
 
@@ -332,9 +313,8 @@
       return s.replace(/[^a-z0-9_]/g, "");
     }
 
-
     /* ============================================================
-       8. detail.json プレフェッチ
+       8) Prefetch detail json
        ============================================================ */
 
     const prefetchedKeys = new Set();
@@ -380,9 +360,8 @@
       }
     }
 
-
     /* ============================================================
-       9. セレクトボックス生成
+       9) Select options
        ============================================================ */
 
     function buildOptions() {
@@ -393,10 +372,7 @@
 
       const labelOps = ["All", ...uniq(items.map((it) => it.label))];
 
-      const decOps = [
-        "All",
-        ...Array.from(new Set(items.map((it) => toDecade(it.year)))),
-      ]
+      const decOps = ["All", ...Array.from(new Set(items.map((it) => toDecade(it.year))))]
         .filter((v) => v !== 0)
         .sort((a, b) => a - b)
         .map(String);
@@ -420,9 +396,8 @@
       }
     }
 
-
     /* ============================================================
-       10. バーチャルリスト準備
+       10) Virtual list base
        ============================================================ */
 
     const outer = document.createElement("div");
@@ -431,27 +406,34 @@
 
     const inner = document.createElement("div");
     inner.style.position = "absolute";
-    inner.style.left = 0;
-    inner.style.right = 0;
+    inner.style.left = "0";
+    inner.style.right = "0";
     outer.appendChild(inner);
 
     let ROW_H = 40;
 
     function measureRowH() {
-      const probe = document.createElement("div");
-      probe.className = "row";
+      // Create a probe <a> row to match actual row height
+      const probe = document.createElement("a");
+      probe.className = "row row--click";
+      probe.href = "#";
       probe.innerHTML =
-        '<div class="name">X</div><div class="label">X</div><div class="year">2000</div>';
+        '<div class="name"><button type="button" class="favToggle">☆</button><span class="nameText">X</span></div>' +
+        '<div class="label">X</div>' +
+        '<div class="year">2000</div>';
       probe.style.visibility = "hidden";
+      probe.style.position = "absolute";
+      probe.style.left = "-9999px";
       outer.appendChild(probe);
+
       const h = probe.getBoundingClientRect().height;
       ROW_H = Math.max(28, Math.round(h)) || ROW_H;
+
       outer.removeChild(probe);
     }
 
     measureRowH();
 
-    // ★アイドルアニメを一括で止める
     function pauseIdleAnimation() {
       const stars = listEl.querySelectorAll(".favToggle.is-on");
       stars.forEach((star) => {
@@ -460,39 +442,30 @@
       });
     }
 
-    // ★アイドルアニメを一括で再開する
     function startIdleAnimation() {
       const stars = listEl.querySelectorAll(".favToggle.is-on");
       stars.forEach((star) => {
         star.classList.remove("fav-idle-stop");
-        // アニメ再スタート用の強制リフロー
         star.classList.remove("fav-idle-run");
         void star.offsetWidth;
         star.classList.add("fav-idle-run");
       });
     }
 
-    // スクロール：描画 + アニメ一時停止 + 停止後に再開
     listEl.addEventListener(
       "scroll",
       () => {
         render();
-
-        // スクロール中はアイドルアニメ停止
         pauseIdleAnimation();
 
         if (favIdleTimer) clearTimeout(favIdleTimer);
-        favIdleTimer = setTimeout(() => {
-          // スクロールが一定時間止まったら再開
-          startIdleAnimation();
-        }, 200); // 200ms 無操作で「スクロール終了」とみなす
+        favIdleTimer = setTimeout(() => startIdleAnimation(), 200);
       },
       { passive: true }
     );
 
-
     /* ============================================================
-       11. フィルタ・ソート
+       11) Filter / sort
        ============================================================ */
 
     function applyFiltersAndSort() {
@@ -500,8 +473,7 @@
         (it) =>
           matchQuery(it) &&
           (filterLabel === "All" || it.label === filterLabel) &&
-          (filterDecade === "All" ||
-            toDecade(it.year) === parseInt(filterDecade, 10))
+          (filterDecade === "All" || toDecade(it.year) === parseInt(filterDecade, 10))
       );
 
       if (filterFavoritesOnly) {
@@ -518,11 +490,8 @@
       render();
       updateSortUI();
 
-      // フィルタ変更後も少し待ってからアイドルアニメ再開
       if (favIdleTimer) clearTimeout(favIdleTimer);
-      favIdleTimer = setTimeout(() => {
-        startIdleAnimation();
-      }, 200);
+      favIdleTimer = setTimeout(() => startIdleAnimation(), 200);
     }
 
     function updateSortUI() {
@@ -533,11 +502,7 @@
         return key;
       };
 
-      const jpDir = (dir) => {
-        if (dir === "asc") return "昇順";
-        if (dir === "desc") return "降順";
-        return dir;
-      };
+      const jpDir = (dir) => (dir === "asc" ? "昇順" : dir === "desc" ? "降順" : dir);
 
       const arrow = sortDir === "asc" ? " ▲" : " ▼";
 
@@ -556,53 +521,36 @@
         if (!el) return;
         el.classList.add("sorted");
         el.textContent += arrow;
-        el.setAttribute(
-          "aria-sort",
-          sortDir === "asc" ? "ascending" : "descending"
-        );
+        el.setAttribute("aria-sort", sortDir === "asc" ? "ascending" : "descending");
       };
 
       if (sortKey === "riddim") activate(hName);
       if (sortKey === "label") activate(hLabel);
-      if (sortKey === "year")  activate(hYear);
+      if (sortKey === "year") activate(hYear);
 
       if (metaEl) {
-        let text =
-          `表示中 ${visible.length} / ${items.length} ‐ ソート：` +
-          `${jpKey(sortKey)}（${jpDir(sortDir)}）`;
-
-        if (filterFavoritesOnly) {
-          text += " ‐ お気に入りのみ";
-        }
-
+        let text = `表示中 ${visible.length} / ${items.length} ‐ ソート：${jpKey(sortKey)}（${jpDir(sortDir)}）`;
+        if (filterFavoritesOnly) text += " ‐ お気に入りのみ";
         metaEl.textContent = text;
       }
     }
 
-
     /* ============================================================
-       12. イベント設定
+       12) Events
        ============================================================ */
 
     const toggleSortByHeader = (key) => {
-      if (sortKey === key) {
-        sortDir = sortDir === "asc" ? "desc" : "asc";
-      } else {
+      if (sortKey === key) sortDir = sortDir === "asc" ? "desc" : "asc";
+      else {
         sortKey = key;
         sortDir = "asc";
       }
       applyFiltersAndSort();
     };
 
-    if (hName) {
-      hName.addEventListener("click", () => toggleSortByHeader("riddim"));
-    }
-    if (hLabel) {
-      hLabel.addEventListener("click", () => toggleSortByHeader("label"));
-    }
-    if (hYear) {
-      hYear.addEventListener("click", () => toggleSortByHeader("year"));
-    }
+    hName?.addEventListener("click", () => toggleSortByHeader("riddim"));
+    hLabel?.addEventListener("click", () => toggleSortByHeader("label"));
+    hYear?.addEventListener("click", () => toggleSortByHeader("year"));
 
     if (qInput) {
       qInput.addEventListener(
@@ -621,31 +569,22 @@
       );
     }
 
-    if (labelSelect) {
-      labelSelect.addEventListener("change", (e) => {
-        filterLabel = e.target.value;
-        applyFiltersAndSort();
-      });
-    }
+    labelSelect?.addEventListener("change", (e) => {
+      filterLabel = e.target.value;
+      applyFiltersAndSort();
+    });
 
-    if (yearSelect) {
-      yearSelect.addEventListener("change", (e) => {
-        filterDecade = e.target.value;
-        applyFiltersAndSort();
-      });
-    }
+    yearSelect?.addEventListener("change", (e) => {
+      filterDecade = e.target.value;
+      applyFiltersAndSort();
+    });
 
-    if (favFilterBtn) {
-      favFilterBtn.addEventListener("click", () => {
-        filterFavoritesOnly = !filterFavoritesOnly;
-        favFilterBtn.classList.toggle("is-active", filterFavoritesOnly);
-        favFilterBtn.setAttribute(
-          "aria-pressed",
-          filterFavoritesOnly ? "true" : "false"
-        );
-        applyFiltersAndSort();
-      });
-    }
+    favFilterBtn?.addEventListener("click", () => {
+      filterFavoritesOnly = !filterFavoritesOnly;
+      favFilterBtn.classList.toggle("is-active", filterFavoritesOnly);
+      favFilterBtn.setAttribute("aria-pressed", filterFavoritesOnly ? "true" : "false");
+      applyFiltersAndSort();
+    });
 
     if (resetBtn) {
       const doReset = () => {
@@ -656,7 +595,7 @@
         filterLabel = "All";
         filterDecade = "All";
         if (labelSelect) labelSelect.value = "All";
-        if (yearSelect)  yearSelect.value  = "All";
+        if (yearSelect) yearSelect.value = "All";
 
         filterFavoritesOnly = false;
         if (favFilterBtn) {
@@ -671,46 +610,36 @@
 
       resetBtn.addEventListener(
         "touchstart",
-        () => {
-          resetBtn.classList.add("pressed");
-        },
+        () => resetBtn.classList.add("pressed"),
         { passive: true }
       );
 
       ["touchend", "touchcancel"].forEach((ev) => {
         resetBtn.addEventListener(
           ev,
-          () => {
-            setTimeout(() => resetBtn.classList.remove("pressed"), 80);
-          },
+          () => setTimeout(() => resetBtn.classList.remove("pressed"), 80),
           { passive: true }
         );
       });
     }
 
-
     /* ============================================================
-       13. レンダリング（バーチャルリスト）
+       13) Rendering (virtual list) - row is <a>
        ============================================================ */
 
-    // ★の見た目 + アニメクラス付け
-    // allowAnim = true のときだけ idle アニメを回す（初期描画 & クリック）
     function setFavVisual(btn, key, allowAnim = false) {
       const on = isFavorite(key);
       btn.textContent = on ? "★" : "☆";
       btn.classList.toggle("is-on", on);
 
-      // いったん関連クラスを全部外す
       btn.classList.remove("fav-idle-run", "fav-idle-stop", "is-unfav");
 
       if (!on) return;
 
       if (allowAnim) {
-        // 初期描画 or クリック時：pop + idle
         void btn.offsetWidth;
         btn.classList.add("fav-idle-run");
       } else {
-        // スクロール等で再描画されたときは「停止状態」から始める
         btn.classList.add("fav-idle-stop");
       }
     }
@@ -730,17 +659,22 @@
       inner.innerHTML = "";
 
       for (let i = start; i < end; i++) {
-        const it  = visible[i];
-        const key = it.riddim;   // detail.html?riddim= でもこの文字列を渡している
+        const it = visible[i];
+        const key = it.riddim;
 
-        const row = document.createElement("div");
+        const row = document.createElement("a");
         row.className = "row row--click";
-        row.dataset.riddimKey = key;
+        row.dataset.riddimKey = key || "";
 
-        if (currentTouchedKey === key) {
-          row.classList.add("touch-hover");
-        }
+        // full-row link
+        row.href = key ? `detail.html?riddim=${encodeURIComponent(key)}` : "#";
 
+        // If key missing, avoid jumping to top
+        if (!key) row.addEventListener("click", (e) => e.preventDefault());
+
+        if (currentTouchedKey === key) row.classList.add("touch-hover");
+
+        // same structure as before (divs inside)
         row.innerHTML =
           `<div class="name"></div>` +
           `<div class="label">${hi(it.label)}</div>` +
@@ -751,20 +685,23 @@
         const favBtn = document.createElement("button");
         favBtn.type = "button";
         favBtn.className = "favToggle";
+        favBtn.setAttribute("aria-label", "お気に入り");
 
-        // 初期描画のみアニメON、それ以外（スクロール/再描画）は停止状態から
+        // Initial render anim ON, re-render OFF
         setFavVisual(favBtn, key, isFirstRender);
 
-        favBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
+        // IMPORTANT:
+        // - button is inside <a>, so stop navigation on click
+        favBtn.addEventListener("click", async (e) => {
           e.preventDefault();
+          e.stopPropagation();
 
           playRipple(favBtn);
 
           const wasFav = isFavorite(key);
-
           toggleFavorite(key);
-          // クリック時は毎回アニメON（pop + idle）
+
+          // click anim ON
           setFavVisual(favBtn, key, true);
 
           const nowFav = isFavorite(key);
@@ -779,24 +716,19 @@
             favBtn.classList.remove("is-unfav");
             void favBtn.offsetWidth;
             favBtn.classList.add("is-unfav");
-
-            setTimeout(() => {
-              favBtn.classList.remove("is-unfav");
-            }, 260);
+            setTimeout(() => favBtn.classList.remove("is-unfav"), 260);
 
             showToast(`${titleForToast}\nお気に入りを解除しました`);
           }
 
-          // ★ Supabase と同期（index → detail 共通鍵：riddim名そのまま）
+          // Supabase sync (lazy client)
           syncFavoriteToSupabase(key, nowFav);
 
-          // 「お気に入りのみ」フィルタ中なら再フィルタ
           if (filterFavoritesOnly) applyFiltersAndSort();
         });
 
-        favBtn.addEventListener("keydown", (e) => {
-          e.stopPropagation();
-        });
+        // Prevent <a> keyboard activation when pressing space/enter on button
+        favBtn.addEventListener("keydown", (e) => e.stopPropagation());
 
         const nameSpan = document.createElement("span");
         nameSpan.className = "nameText";
@@ -807,41 +739,19 @@
           nameDiv.appendChild(nameSpan);
         }
 
-        const goDetail = () => {
-          if (!key) return;
-          location.href = "detail.html?riddim=" + encodeURIComponent(key);
-        };
-
-        row.setAttribute("role", "link");
-        row.setAttribute("tabindex", "0");
-
-        row.addEventListener("click", goDetail);
-
-        row.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            goDetail();
-          }
-        });
-
+        // prefetch
         row.addEventListener("mouseenter", () => warmupDetailCache(key));
         row.addEventListener("focus", () => warmupDetailCache(key));
-        if (i < start + 5) {
-          warmupDetailCache(key);
-        }
+        if (i < start + 5) warmupDetailCache(key);
 
         inner.appendChild(row);
       }
 
-      // 初回描画が終わったらフラグを折る
-      if (isFirstRender) {
-        isFirstRender = false;
-      }
+      if (isFirstRender) isFirstRender = false;
     }
 
-
     /* ============================================================
-       14. データ読み込み
+       14) Load data
        ============================================================ */
 
     fetch("index.json")
@@ -851,29 +761,22 @@
       })
       .then((data) => {
         items = data.map((it, idx) => ({
-          id:     it.id     ?? idx + 1,
+          id: it.id ?? idx + 1,
           riddim: it.riddim ?? it.name ?? "",
-          label:  it.label  ?? "",
-          year:   it.year   ?? "",
+          label: it.label ?? "",
+          year: it.year ?? "",
         }));
 
         buildOptions();
         applyFiltersAndSort();
         fitListHeight();
 
-        // 初期描画後、少し遅らせて idle アニメをスタート
         if (favIdleTimer) clearTimeout(favIdleTimer);
-        favIdleTimer = setTimeout(() => {
-          startIdleAnimation();
-        }, 300);
+        favIdleTimer = setTimeout(() => startIdleAnimation(), 300);
       })
       .catch((err) => {
         console.error(err);
-        if (metaEl) {
-          metaEl.textContent = "インデックスデータを読み込めませんでした。";
-        }
+        if (metaEl) metaEl.textContent = "インデックスデータを読み込めませんでした。";
       });
-
-  } // init
-
+  }
 })();

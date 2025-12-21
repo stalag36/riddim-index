@@ -5,41 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="version" content="v1.3" />
 
-  <meta name="robots" content="noindex,follow">
+  <meta name="description" content="レゲエのリディムを検索・一覧表示できるデータベース。" />
+  <link rel="canonical" href="https://italisle.jp/" />
+  <title>RIDDIM INDEX – レゲエ・リディム データベース</title>
 
-  <title>RIDDIM INDEX – お気に入りランキング</title>
-
-  <!-- ✅ favicon（ルート固定 + .ico優先） -->
+  <!-- favicon -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="shortcut icon" href="/favicon.ico">
 
-  <!-- ✅ preconnect（CDNの初回接続を前倒し） -->
+  <!-- CDN preconnect -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
-  <!-- ✅ CSS 非同期化（レンダリングブロック軽減） -->
+  <!-- CSS（非同期ロード） -->
   <link rel="preload" href="/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="/style.css"></noscript>
 
-  <!-- ✅ Supabase設定（軽いので先に） -->
+  <!-- OGP -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="RIDDIM INDEX" />
+  <meta property="og:title" content="RIDDIM INDEX – レゲエ・リディム データベース" />
+  <meta property="og:description" content="レゲエのリディムを検索・一覧表示できるデータベース。" />
+  <meta property="og:url" content="https://italisle.jp/" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="RIDDIM INDEX – レゲエ・リディム データベース" />
+  <meta name="twitter:description" content="レゲエのリディムを検索・一覧表示できるデータベース。" />
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "RIDDIM INDEX",
+    "url": "https://italisle.jp/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://italisle.jp/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- Supabase 設定 -->
   <script>
     window.SUPABASE_URL = "https://vlijhkkqszwlejnywidy.supabase.co";
     window.SUPABASE_ANON_KEY = "sb_publishable_w55iXdKQ2XpFxjZA6OD2UA_aYtaSvJU";
   </script>
 
-  <!-- ✅ Supabaseを必要時にだけロードする（レンダリングブロック回避） -->
+  <!-- Supabase 遅延ロード -->
   <script>
     window.loadSupabase = async function () {
-      if (window.supabase) return window.supabase; // 既にロード済み
-
+      if (window.supabase) return window.supabase;
       const mod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-      window.supabase = mod.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+      window.supabase = mod.createClient(
+        window.SUPABASE_URL,
+        window.SUPABASE_ANON_KEY
+      );
       return window.supabase;
     };
   </script>
 </head>
 
-<body class="detailPage">
+<body class="indexPage">
   <header class="masthead container">
     <div class="mastheadInner">
       <h1 class="title">
@@ -47,7 +76,7 @@
         <span class="ver">v1.3</span>
       </h1>
 
-      <!-- ▼ 右上メニューボタン（右スライド） -->
+      <!-- 右上メニュー -->
       <div class="pageMenuWrap">
         <button
           id="pageMenuBtn"
@@ -61,14 +90,17 @@
           <span class="hamburger" aria-hidden="true"></span>
         </button>
 
-        <!-- ▼ 背景（クリックで閉じる） -->
         <div id="menuBackdrop" class="menuBackdrop" hidden></div>
 
-        <!-- ▼ 右スライドメニュー本体 -->
         <nav id="pageMenu" class="pageMenuDrawer" hidden aria-label="メニュー">
           <div class="pageMenuHeader">
             <span class="pageMenuTitle">メニュー</span>
-            <button id="menuCloseBtn" class="pageMenuClose" type="button" aria-label="メニューを閉じる">✕</button>
+            <button
+              id="menuCloseBtn"
+              class="pageMenuClose"
+              type="button"
+              aria-label="メニューを閉じる"
+            >✕</button>
           </div>
 
           <ul class="pageMenu__list">
@@ -76,7 +108,7 @@
               <a href="index.html" class="pageMenu__link">インデックス</a>
             </li>
             <li class="pageMenu__item">
-              <a href="ranking.html" class="pageMenu__link" aria-current="page">ランキング</a>
+              <a href="ranking.html" class="pageMenu__link">ランキング</a>
             </li>
           </ul>
         </nav>
@@ -84,26 +116,70 @@
     </div>
 
     <div class="titleline"></div>
+
+    <input
+      id="q"
+      class="input"
+      type="search"
+      autocomplete="off"
+      placeholder="Search（ Riddim ／ レーベル ／ リリース年 ）"
+      aria-label="全体検索"
+    />
   </header>
 
-  <section class="card container rankingCard">
-    <header class="rankingHead">
-      <h2 class="rankingTitle">お気に入りランキング</h2>
-      <p class="rankingSub">★ の数が多い順（0件は非表示）</p>
-    </header>
+  <!-- フィルター -->
+  <section class="filters container" id="filters">
+    <select id="labelSelect" aria-label="レーベル">
+      <option value="All">レーベル（ALL）</option>
+    </select>
 
-    <div id="rankingMeta" class="rankingMeta">読み込み中...</div>
+    <select id="yearSelect" aria-label="年代">
+      <option value="All">年代（ALL）</option>
+    </select>
 
-    <!-- 棒グラフ本体 -->
-    <div id="rankingBars" class="rankingBars"></div>
+    <button
+      id="filterFavorites"
+      class="favFilterBtn"
+      type="button"
+      aria-pressed="false"
+      aria-label="お気に入りのみ表示"
+    >
+      ★ Favorites
+    </button>
+
+    <button
+      id="resetFilters"
+      class="resetBtn"
+      type="button"
+      aria-label="検索条件をリセット"
+    >
+      ↻
+    </button>
   </section>
 
-  <footer class="footerNote">
-    ChatGPTによって作成しているため、情報は必ずしも正しいとは限りません。<br />
-    重要な情報は確認するようにしてください。
-  </footer>
+  <div class="container">
+    <div id="meta" class="meta"></div>
+  </div>
 
-  <!-- ▼ 右上メニュー開閉（右スライド対応） -->
+  <!-- 一覧 -->
+  <section class="card container">
+    <!-- ★ ARIA table系を使わない（PageSpeed対策） -->
+    <div class="columns sticky-head">
+      <button id="hName"  class="col name"  type="button" aria-sort="ascending">
+        Riddim
+      </button>
+      <button id="hLabel" class="col label" type="button" aria-sort="none">
+        レーベル
+      </button>
+      <button id="hYear"  class="col year"  type="button" aria-sort="none">
+        リリース年
+      </button>
+    </div>
+
+    <div id="list" class="list"></div>
+  </section>
+
+  <!-- メニュー制御 -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const btn = document.getElementById("pageMenuBtn");
@@ -117,10 +193,8 @@
       const openMenu = () => {
         if (isOpen) return;
         isOpen = true;
-
         menu.hidden = false;
         backdrop.hidden = false;
-
         requestAnimationFrame(() => {
           document.body.classList.add("menu-open");
           btn.classList.add("is-open");
@@ -131,11 +205,9 @@
       const closeMenu = () => {
         if (!isOpen) return;
         isOpen = false;
-
         document.body.classList.remove("menu-open");
         btn.classList.remove("is-open");
         btn.setAttribute("aria-expanded", "false");
-
         const onEnd = () => {
           if (isOpen) return;
           menu.hidden = true;
@@ -145,11 +217,9 @@
         menu.addEventListener("transitionend", onEnd);
       };
 
-      const toggleMenu = () => (isOpen ? closeMenu() : openMenu());
-
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        toggleMenu();
+        isOpen ? closeMenu() : openMenu();
       });
 
       closeBtn?.addEventListener("click", closeMenu);
@@ -159,20 +229,20 @@
         link.addEventListener("click", closeMenu);
       });
 
-      document.addEventListener("click", (e) => {
-        if (!isOpen) return;
-        if (menu.contains(e.target)) return;
-        if (btn.contains(e.target)) return;
-        closeMenu();
-      });
-
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") closeMenu();
       });
     });
   </script>
 
-  <!-- ✅ ranking.js：defer（レンダリングブロック回避） -->
-  <script src="/ranking.js" defer></script>
+  <!-- アプリ本体 -->
+  <script src="/index.js" defer></script>
+
+  <footer class="footerNote">
+    ChatGPTによって作成しているため、情報は必ずしも正しいとは限りません。<br>
+    重要な情報は確認するようにしてください。
+  </footer>
+
+  <div id="toast" class="toast"></div>
 </body>
 </html>
